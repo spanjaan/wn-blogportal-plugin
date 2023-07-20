@@ -48,6 +48,15 @@ class Tag extends Model
     ];
 
     /**
+    * Default values for model fields
+    *
+    * @var array
+    */
+    public $attributes = [
+        'color' => '#007bff'
+    ];
+
+    /**
      * Model Validation Rules
      *
      * @var array
@@ -86,14 +95,35 @@ class Tag extends Model
     ];
 
     /**
-     * Hook - Before Model is createds
+     * Hook - Before Model is created
      *
      * @return void
      */
     public function beforeCreate()
     {
         $this->title = empty($this->title) ? $this->slug : $this->title;
-        $this->slug = Str::slug($this->slug);
+        $this->slug = Str::slug($this->slug . '-tag');
+    }
+
+    /**
+     * Hook - Before Model is updated
+     *
+     * @return void
+     */
+    public function beforeUpdate()
+    {
+        $this->slug = Str::slug($this->slug . '-tag');
+    }
+    /**
+     * Hook - Before Model is saved
+     *
+     * @return void
+     */
+    public function beforeSave()
+    {
+        if ($this->isDirty('title')) {
+            $this->slug = Str::slug($this->title);
+        }
     }
 
     /**
