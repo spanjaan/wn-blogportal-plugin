@@ -5,6 +5,7 @@
     "description": "Extends Winter's Blog plugin with tag, archives and more.",
     "keywords": [
         "winter", 
+        "blogportal",
         "wintercms", 
         "blog",
         "archives"
