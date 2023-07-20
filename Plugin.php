@@ -153,11 +153,11 @@ class Plugin extends PluginBase
 
         // Implement custom Models
         Post::extend(function ($model) {
-            $model->implement[] = BlogHubPostModel::class;
+            $model->implement[] = BlogPortalPostModel::class;
         });
 
         BackendUser::extend(function ($model) {
-            $model->implement[] = BlogHubBackendUserModel::class;
+            $model->implement[] = BlogPortalBackendUserModel::class;
         });
 
 
