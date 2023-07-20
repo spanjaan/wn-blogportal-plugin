@@ -21,6 +21,9 @@ fields:
         label: spanjaan.blogportal::lang.model.tags.slug
         comment: spanjaan.blogportal::lang.model.tags.slugComment
         span: right
+        preset:
+            field: title
+            type: slug
 
     description:
         type: markdown
