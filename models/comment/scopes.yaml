@@ -1,0 +1,26 @@
+# ===================================
+# Filter Scope Definitions
+# ===================================
+
+scopes:
+    status:
+        type: group
+        label: Status
+        conditions: status in (:filtered)
+        options:
+            pending: spanjaan.blogportal::lang.model.comments.statusPending
+            approved: spanjaan.blogportal::lang.model.comments.statusApproved
+            rejected: spanjaan.blogportal::lang.model.comments.statusRejected
+            spam: spanjaan.blogportal::lang.model.comments.statusSpam
+        default:
+            - pending
+            - approved
+            - rejected
+
+    created_at:
+        label: Date
+        type: date
+        conditions:
+            after: created_at >= ':value'
+            between: created_at >= ':after' AND created_at <= ':before'
+            before: created_at <= ':before'

@@ -1,0 +1,44 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    favorite:
+        type: switch
+        label: spanjaan.blogportal::lang.model.comments.favorite
+        comment: spanjaan.blogportal::lang.model.comments.favoriteComment
+
+    title:
+        type: text
+        label: spanjaan.blogportal::lang.model.comments.title
+        comment: spanjaan.blogportal::lang.model.comments.titleComment
+        span: left
+
+    status:
+        type: dropdown
+        label: spanjaan.blogportal::lang.model.comments.status
+        comment: spanjaan.blogportal::lang.model.comments.statusComment
+        showSearch: false
+        options:
+            pending: spanjaan.blogportal::lang.model.comments.statusPending
+            approved: spanjaan.blogportal::lang.model.comments.statusApproved
+            rejected: spanjaan.blogportal::lang.model.comments.statusRejected
+            spam: spanjaan.blogportal::lang.model.comments.statusSpam
+        span: right
+
+    content:
+        type: textarea
+        label: spanjaan.blogportal::lang.model.comments.content
+        comment: spanjaan.blogportal::lang.model.comments.contentComment
+
+    author:
+        type: text
+        label: spanjaan.blogportal::lang.model.comments.author
+        comment: spanjaan.blogportal::lang.model.comments.authorComment
+        span: left
+
+    author_email:
+        type: text
+        label: spanjaan.blogportal::lang.model.comments.authorEmail
+        comment: spanjaan.blogportal::lang.model.comments.authorEmailComment
+        span: right

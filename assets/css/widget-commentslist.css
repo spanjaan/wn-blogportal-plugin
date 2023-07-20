@@ -1,0 +1,49 @@
+.blogportal-report-widget.widget-commentslist .nav-item .nav-link {
+    color: #35425B;
+    font-weight: 600;
+    border-width: 0 0 2px 0;
+    border-style: solid;
+    border-color: transparent;
+    transition: color 200ms ease, border-color 200ms ease, background-color 200ms ease;
+}
+
+.blogportal-report-widget.widget-commentslist .nav-item .nav-link:hover {
+    border-color: #7e8c8d;
+}
+
+.blogportal-report-widget.widget-commentslist .nav-item .nav-link.active {
+    color: #e67e22;
+    border-bottom-color: #e67e22;
+}
+
+.blogportal-report-widget.widget-commentslist .nav-item .nav-link.active .badge {
+    color: white !important;
+    background-color: #e67e22 !important;
+}
+
+.item.width-1 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-2 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-3 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-4 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-5 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-6 .blogportal-report-widget.widget-commentslist .comment-panel {
+    width: 100%;
+}
+
+.item.width-7 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-8 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-9 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-10 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-11 .blogportal-report-widget.widget-commentslist .comment-panel,
+.item.width-12 .blogportal-report-widget.widget-commentslist .comment-panel {
+    width: calc(100% / 3 * 2);
+}
+
+.item.width-7 .blogportal-report-widget.widget-commentslist .comment-next,
+.item.width-8 .blogportal-report-widget.widget-commentslist .comment-next,
+.item.width-9 .blogportal-report-widget.widget-commentslist .comment-next,
+.item.width-10 .blogportal-report-widget.widget-commentslist .comment-next,
+.item.width-11 .blogportal-report-widget.widget-commentslist .comment-next,
+.item.width-12 .blogportal-report-widget.widget-commentslist .comment-next {
+    width: calc(100% / 3);
+}

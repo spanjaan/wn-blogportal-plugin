@@ -1,0 +1,201 @@
+.blogportal-report-widget .position-relative {
+    position: relative !important;
+}
+
+.blogportal-report-widget .position-absolute {
+    position: absolute !important;
+}
+
+.blogportal-report-widget .fs-5 {
+    font-size: 1.5rem !important;
+}
+
+.blogportal-report-widget .top-0 {
+    top: 0 !important;
+}
+
+.blogportal-report-widget .start-100 {
+    left: 100% !important;
+}
+
+.blogportal-report-widget .flex-fill {
+    flex: 1 1 auto !important;
+}
+
+.blogportal-report-widget .rounded-pill {
+    border-radius: 50rem !important;
+}
+
+.blogportal-report-widget .align-items-center {
+    align-items: center !important;
+}
+
+.blogportal-report-widget .align-self-center {
+    align-self: center !important;
+}
+
+.blogportal-report-widget .rounded {
+    border-radius: .3rem !important;
+}
+
+.blogportal-report-widget .border {
+    border: 1px solid #d7e1ea !important;
+}
+
+.blogportal-report-widget .border-start {
+    border-left: 1px solid #d7e1ea !important;
+}
+
+.blogportal-report-widget .text-dark {
+    color: rgb(33, 37, 41) !important;
+}
+
+.blogportal-report-widget .bg-light {
+    background-color: rgb(240, 244, 248) !important;
+}
+
+.blogportal-report-widget .bg-success {
+    background-color: rgb(134, 203, 67) !important;
+}
+
+.blogportal-report-widget .bg-warning {
+    background-color: rgb(230, 126, 34) !important;
+}
+
+.blogportal-report-widget .bg-secondary {
+    background-color: rgb(114, 128, 157) !important;
+}
+
+.blogportal-report-widget .bg-transparent {
+    background-color: transparent !important;
+}
+
+.blogportal-report-widget .translate-middle {
+    transform: translate(-50%, -50%) !important;
+}
+
+.blogportal-report-widget .list-inline,
+.blogportal-report-widget .list-unstyled {
+    list-style: none;
+    padding-left: 0;
+}
+
+.blogportal-report-widget .list-inline-item {
+    display: inline-block;
+}
+
+.blogportal-report-widget .btn.disabled,
+.blogportal-report-widget .btn:disabled {
+    opacity: .65;
+    pointer-events: none;
+}
+
+.blogportal-report-widget .btn-link.disabled,
+.blogportal-report-widget .btn-link:disabled {
+    color: #72809d;
+}
+
+.blogportal-report-widget .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 0;
+    margin-left: -10.5px;
+    margin-right: -10.5px;
+}
+
+.blogportal-report-widget .row>* {
+    margin-top: 1rem;
+    padding-left: calc(2.5rem * .5);
+    padding-right: calc(2.5rem * .5);
+    max-width: 100%;
+}
+
+.blogportal-report-widget .col-12 {
+    flex: 0 0 auto;
+    width: 100%;
+}
+
+.blogportal-report-widget .col-6 {
+    flex: 0 0 auto;
+    width: 50%;
+}
+
+@media (min-width: 992px) {
+    .blogportal-report-widget .col-lg-6 {
+        flex: 0 0 auto;
+        width: 50%;
+    }
+}
+
+.blogportal-report-widget .badge {
+    border-radius: 0.3rem;
+    color: #fff;
+    display: inline-block;
+    font-size: .75em;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.35em 0.65em;
+    text-align: center;
+    vertical-align: baseline;
+    white-space: nowrap;
+}
+
+.blogportal-report-widget .list-group {
+    border-radius: 0.3rem;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+    padding-left: 0;
+}
+
+.blogportal-report-widget .list-group-item-action {
+    color: #506880;
+    text-align: inherit;
+    width: 100%;
+}
+
+.blogportal-report-widget .list-group-item {
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, .125);
+    color: #212529;
+    display: block;
+    padding: 0.5rem 1rem;
+    position: relative;
+}
+
+.blogportal-report-widget .list-group-item:last-child {
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+}
+
+.blogportal-report-widget .list-group-item:first-child {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+}
+
+.blogportal-report-widget .nav {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin-bottom: 0;
+    padding-left: 0;
+}
+
+.blogportal-report-widget .nav .nav-link {
+    color: #3498db;
+    display: block;
+    padding: 0.5rem 1rem;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+}
+
+.blogportal-report-widget .card {
+    word-wrap: break-word;
+    background-clip: border-box;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, .125);
+    border-radius: 0.3rem;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+}

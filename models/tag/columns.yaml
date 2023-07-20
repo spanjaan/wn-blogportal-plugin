@@ -1,0 +1,40 @@
+# ===================================
+#  List Column Definitions
+# ===================================
+
+columns:
+    slug:
+        label: spanjaan.blogportal::lang.model.tags.slug
+        searchable: true
+
+    title:
+        label: spanjaan.blogportal::lang.model.tags.title
+        searchable: true
+
+    promote:
+        label: spanjaan.blogportal::lang.model.tags.promote
+        type: switch
+        default: false
+
+    color:
+        label: spanjaan.blogportal::lang.model.tags.color
+        type: colorpicker
+
+    posts:
+        label: spanjaan.blogportal::lang.model.tags.postsNumber
+        type: number
+        align: left
+        select: >
+            (
+                SELECT count(*)
+                FROM spanjaan_blogportal_tags_posts
+                WHERE spanjaan_blogportal_tags_posts.tag_id = spanjaan_blogportal_tags.id
+            )
+
+    created_at:
+        label: winter.blog::lang.post.created
+        invisible: true
+
+    updated_at:
+        label: winter.blog::lang.post.updated
+        invisible: true

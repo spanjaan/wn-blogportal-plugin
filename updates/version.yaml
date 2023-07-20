@@ -1,0 +1,7 @@
+v1.0.0:
+  - "Initial Release"
+  - create_tags_table.php
+  - update_posts_table.php
+  - create_visitors_table.php
+  - update_backend_users_table.php
+  - create_comments_table.php

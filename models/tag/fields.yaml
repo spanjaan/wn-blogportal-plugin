@@ -1,0 +1,40 @@
+# ===================================
+#  Form Field Definitions
+# ===================================
+
+fields:
+    promote:
+        type: switch
+        label: spanjaan.blogportal::lang.model.tags.promote
+        comment: spanjaan.blogportal::lang.model.tags.promoteComment
+        permissions:
+            - spanjaan.blogportal.tags.promoted
+
+    title:
+        type: text
+        label: spanjaan.blogportal::lang.model.tags.title
+        comment: spanjaan.blogportal::lang.model.tags.titleComment
+        span: left
+
+    slug:
+        type: text
+        label: spanjaan.blogportal::lang.model.tags.slug
+        comment: spanjaan.blogportal::lang.model.tags.slugComment
+        span: right
+
+    description:
+        type: markdown
+        label: spanjaan.blogportal::lang.model.tags.description
+        comment: spanjaan.blogportal::lang.model.tags.descriptionComment
+
+    color:
+        type: colorpicker
+        label: spanjaan.blogportal::lang.model.tags.color
+        commentAbove: spanjaan.blogportal::lang.model.tags.colorComment
+
+    posts:
+        type: relation
+        label: spanjaan.blogportal::lang.model.tags.posts
+        commentAbove: spanjaan.blogportal::lang.model.tags.postsComment
+        nameFrom: title
+        emptyOption: spanjaan.blogportal::lang.model.tags.postsEmpty

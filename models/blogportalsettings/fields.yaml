@@ -1,0 +1,152 @@
+tabs:
+    fields:
+        _general_section:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: section
+            label: spanjaan.blogportal::lang.settings.comments.general_section
+
+        author_favorites:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.author_favorites.label
+            comment: spanjaan.blogportal::lang.settings.comments.author_favorites.comment
+            default: true
+
+        like_comment:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.like_comment.label
+            comment: spanjaan.blogportal::lang.settings.comments.like_comment.comment
+            default: true
+            span: left
+
+        dislike_comment:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.dislike_comment.label
+            comment: spanjaan.blogportal::lang.settings.comments.dislike_comment.comment
+            default: true
+            span: right
+
+        restrict_to_users:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.restrict_to_users.label
+            comment: spanjaan.blogportal::lang.settings.comments.restrict_to_users.comment
+            default: false
+            span: left
+
+        _comment_form_section:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: section
+            label: spanjaan.blogportal::lang.settings.comments.comment_form_section
+
+        guest_comments:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.guest_comments.label
+            comment: spanjaan.blogportal::lang.settings.comments.guest_comments.comment
+            default: true
+
+        moderate_guest_comments:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.moderate_guest_comments.label
+            comment: spanjaan.blogportal::lang.settings.comments.moderate_guest_comments.comment
+            default: true
+            span: left
+
+        moderate_user_comments:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.moderate_user_comments.label
+            comment: spanjaan.blogportal::lang.settings.comments.moderate_user_comments.comment
+            default: false
+            span: right
+
+        form_comment_title:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.form_comment_title.label
+            comment: spanjaan.blogportal::lang.settings.comments.form_comment_title.comment
+            default: false
+
+        form_comment_markdown:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.form_comment_markdown.label
+            comment: spanjaan.blogportal::lang.settings.comments.form_comment_markdown.comment
+            default: true
+
+        form_comment_honeypot:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.form_comment_honeypot.label
+            comment: spanjaan.blogportal::lang.settings.comments.form_comment_honeypot.comment
+            default: true
+
+        form_comment_captcha:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.form_comment_captcha.label
+            comment: spanjaan.blogportal::lang.settings.comments.form_comment_captcha.comment
+            default: false
+
+        form_tos_checkbox:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.form_tos_checkbox.label
+            comment: spanjaan.blogportal::lang.settings.comments.form_tos_checkbox.comment
+            default: false
+            span: left
+
+        form_tos_hide_on_user:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: switch
+            label: spanjaan.blogportal::lang.settings.comments.form_tos_hide_on_user.label
+            comment: spanjaan.blogportal::lang.settings.comments.form_tos_hide_on_user.comment
+            default: true
+            span: right
+
+        form_tos_label:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: text
+            label: spanjaan.blogportal::lang.settings.comments.form_tos_label.label
+            default: spanjaan.blogportal::lang.settings.comments.form_tos_label.default
+            comment: spanjaan.blogportal::lang.settings.comments.form_tos_label.comment
+            span: left
+            trigger:
+                action: show
+                field: form_tos_type
+                condition: value[cms_page][static_page]
+
+        form_tos_type:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: balloon-selector
+            label: spanjaan.blogportal::lang.settings.comments.form_tos_type.label
+            default: cms_page
+            span: left
+
+        form_tos_cms_page:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: dropdown
+            label: spanjaan.blogportal::lang.settings.comments.form_tos_page.cmsLabel
+            emptyOption: spanjaan.blogportal::lang.settings.comments.form_tos_page.emptyOption
+            comment: spanjaan.blogportal::lang.settings.comments.form_tos_page.comment
+            span: right
+            trigger:
+                action: show
+                field: form_tos_type
+                condition: value[cms_page]
+
+        form_tos_static_page:
+            tab: spanjaan.blogportal::lang.settings.comments.tab
+            type: dropdown
+            label: spanjaan.blogportal::lang.settings.comments.form_tos_page.staticLabel
+            emptyOption: spanjaan.blogportal::lang.settings.comments.form_tos_page.emptyOption
+            comment: spanjaan.blogportal::lang.settings.comments.form_tos_page.comment
+            span: right
+            trigger:
+                action: show
+                field: form_tos_type
+                condition: value[static_page]

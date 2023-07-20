@@ -1,0 +1,31 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: spanjaan.blogportal::lang.model.tags.recordName
+
+# Model Form Field configuration
+form: $/spanjaan/blogportal/models/tag/fields.yaml
+
+# Model Class name
+modelClass: SpAnjaan\BlogPortal\Models\Tag
+
+# Default redirect location
+defaultRedirect: spanjaan/blogportal/tags
+
+# Create page
+create:
+    title: backend::lang.form.create_title
+    redirect: spanjaan/blogportal/tags/update/:id
+    redirectClose: spanjaan/blogportal/tags
+
+# Update page
+update:
+    title: backend::lang.form.update_title
+    redirect: spanjaan/blogportal/tags
+    redirectClose: spanjaan/blogportal/tags
+
+# Preview page
+preview:
+    title: backend::lang.form.preview_title

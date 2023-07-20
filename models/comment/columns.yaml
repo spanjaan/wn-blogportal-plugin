@@ -1,0 +1,53 @@
+# ===================================
+#  List Column Definitions
+# ===================================
+
+columns:
+    status:
+        type: text
+        label: spanjaan.blogportal::lang.model.comments.statusColumn
+        options:
+            pending:
+                - spanjaan.blogportal::lang.model.comments.statusPending
+                - "#536061"
+            approved:
+                - spanjaan.blogportal::lang.model.comments.statusApproved
+                - "#86cb43"
+            rejected:
+                - spanjaan.blogportal::lang.model.comments.statusRejected
+                - "#e67e22"
+            spam:
+                - spanjaan.blogportal::lang.model.comments.statusSpam
+                - "#ff3e1d"
+        sortable: true
+        width: 200px
+
+    comment:
+        type: text
+        label: spanjaan.blogportal::lang.model.comments.title
+        select: concat(title, ' ', content)
+        sortable: true
+        searchable: true
+
+    favorite:
+        type: switch
+        label: spanjaan.blogportal::lang.model.comments.favoriteColumn
+        sortable: true
+        default: false
+        width: 80px
+
+    likes:
+        type: number
+        label: spanjaan.blogportal::lang.model.comments.likes
+        width: 80px
+
+    dislikes:
+        type: number
+        label: spanjaan.blogportal::lang.model.comments.dislikes
+        width: 80px
+
+    created_at:
+        type: datetime
+        label: winter.blog::lang.post.created
+        sortable: true
+        invisible: true
