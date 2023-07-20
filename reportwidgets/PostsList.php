@@ -78,7 +78,7 @@ class PostsList extends ReportWidgetBase
      */
     protected function loadAssets()
     {
-        $this->addCss('/plugins/spanjaan/blogportal/assets/css/widget-commentslist.css');
+        $this->addCss('/plugins/spanjaan/blogportal/assets/css/widget-winter.css');
     }
 
     /**
