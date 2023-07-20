@@ -19,8 +19,5 @@ scopes:
 
     created_at:
         label: Date
-        type: date
-        conditions:
-            after: created_at >= ':value'
-            between: created_at >= ':after' AND created_at <= ':before'
-            before: created_at <= ':before'
+        type: daterange
+        conditions: created_at >= ':after' AND created_at <= ':before'
