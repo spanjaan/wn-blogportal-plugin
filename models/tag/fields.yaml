@@ -26,9 +26,11 @@ fields:
             type: slug
 
     description:
-        type: text
+        type: textarea
         label: spanjaan.blogportal::lang.model.tags.description
         comment: spanjaan.blogportal::lang.model.tags.descriptionComment
+        size: large
+        span: full
 
     color:
         type: colorpicker
