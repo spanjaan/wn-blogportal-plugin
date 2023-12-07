@@ -102,14 +102,20 @@ class Plugin extends PluginBase
         });
 
         // Extend Richeditor in blog content Field.
-        Event::listen('backend.form.extendFieldsBefore', function ($widget) {
+        Event::listen('backend.form.extendFields', function ($widget) {
+            // Extend only the Blog\Posts controller & Extend only Blog\Post model
             if (!($widget->getController() instanceof \Winter\Blog\Controllers\Posts
-                && $widget->model instanceof \Winter\Blog\Models\Post)
+                    && $widget->model instanceof \Winter\Blog\Models\Post)
             ) {
                 return;
             }
 
-            $widget->tabs['fields']['content']['type'] = 'richeditor';
+            $field = $widget->getField('content');
+            if (class_exists('Winter\Translate\FormWidgets\MLRichEditor')) {
+                $field->config['widget'] = 'Winter\Translate\FormWidgets\MLRichEditor';
+            } else {
+                $field->config['widget'] = 'Backend\FormWidgets\RichEditor';
+            }
         });
 
         // Collect (Unique) Views
@@ -130,13 +136,13 @@ class Plugin extends PluginBase
             $visitor = Visitor::currentUser();
             if (!$visitor->hasSeen($post)) {
                 if ($guest) {
-                    $post->spanjaan_blogportal_unique_views = is_numeric($post->spanjaan_blogportal_unique_views) ? $post->spanjaan_blogportal_unique_views+1 : 1;
+                    $post->spanjaan_blogportal_unique_views = is_numeric($post->spanjaan_blogportal_unique_views) ? $post->spanjaan_blogportal_unique_views + 1 : 1;
                 }
                 $visitor->markAsSeen($post);
             }
 
             if ($guest) {
-                $post->spanjaan_blogportal_views = is_numeric($post->spanjaan_blogportal_views) ? $post->spanjaan_blogportal_views+1 : 1;
+                $post->spanjaan_blogportal_views = is_numeric($post->spanjaan_blogportal_views) ? $post->spanjaan_blogportal_views + 1 : 1;
 
                 if (!empty($post->url)) {
                     $url = $post->url;
