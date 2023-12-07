@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\ReportWidgets;
 
-use AjaxException;
+use ValidationException;
 use BackendAuth;
 use Lang;
 use Backend\Classes\ReportWidgetBase;
@@ -13,6 +13,7 @@ use Cms\Classes\Page;
 use Cms\Classes\Theme;
 use SpAnjaan\BlogPortal\Models\Comment;
 use System\Classes\UpdateManager;
+use Flash;
 
 class CommentsList extends ReportWidgetBase
 {
@@ -21,9 +22,7 @@ class CommentsList extends ReportWidgetBase
      *
      * @return void
      */
-    public function init()
-    {
-    }
+    public function init() {}
 
     /**
      * Initialize the properties of this widget.
@@ -34,8 +33,8 @@ class CommentsList extends ReportWidgetBase
     {
         return [
             'postPage' => [
-                'title'         => 'Winter.blog::lang.settings.posts_post',
-                'description'   => 'Winter.blog::lang.settings.posts_post_description',
+                'title'         => 'winter.blog::lang.settings.posts_post',
+                'description'   => 'winter.blog::lang.settings.posts_post_description',
                 'type'          => 'dropdown',
                 'default'       => 'blog/post',
             ],
@@ -45,7 +44,7 @@ class CommentsList extends ReportWidgetBase
                 'type'          => 'dropdown',
                 'options'       => [
                     'pending'   => Lang::get('spanjaan.blogportal::lang.model.comments.statusPending'),
-                    'accepted'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusAccepted'),
+                    'accepted'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusApproved'),
                     'rejected'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusRejected'),
                     'spam'      => Lang::get('spanjaan.blogportal::lang.model.comments.statusSpam')
                 ]
@@ -92,7 +91,7 @@ class CommentsList extends ReportWidgetBase
             $comment = null;
         } else {
             if (!empty($postPage = $this->property('postPage'))) {
-                $comments->each(fn ($item) => $item->post->setUrl($postPage, new Controller(Theme::getActiveTheme())));
+                $comments->each(fn($item) => $item->post->setUrl($postPage, new Controller(Theme::getActiveTheme())));
             }
             $comment = $comments->shift();
         }
@@ -136,7 +135,7 @@ class CommentsList extends ReportWidgetBase
             $comment = null;
         } else {
             if (!empty($postPage = $this->property('postPage'))) {
-                $comments->each(fn ($item) => $item->post->setUrl($postPage, new Controller(Theme::getActiveTheme())));
+                $comments->each(fn($item) => $item->post->setUrl($postPage, new Controller(Theme::getActiveTheme())));
             }
             $comment = $comments->shift();
         }
@@ -199,22 +198,22 @@ class CommentsList extends ReportWidgetBase
 
         // Check if user has Permission
         if (!(BackendAuth::check() && BackendAuth::getUser()->hasPermission('spanjaan.blogportal.comments.moderate_comments'))) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.moderate_permission'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.moderate_permission'));
         }
 
         // Validate Status
         if (!in_array($status, ['approve', 'reject', 'spam'])) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.invalid_status'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.invalid_status'));
         }
 
         // Validate Comment ID
         if (empty($comment = Comment::where('id', $comment_id)->first())) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_status'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_status'));
         }
 
         // Update Status
         if (($status = $comment->{$status}()) === false) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
         }
 
         // Rebuild Comments List
@@ -223,11 +222,12 @@ class CommentsList extends ReportWidgetBase
             $comment = null;
         } else {
             if (!empty($postPage = $this->property('postPage'))) {
-                $comments->each(fn ($item) => $item->post->setUrl($postPage, new Controller(Theme::getActiveTheme())));
+                $comments->each(fn($item) => $item->post->setUrl($postPage, new Controller(Theme::getActiveTheme())));
             }
             $comment = $comments->shift();
         }
-
+        // Return Response with Flash Message
+        Flash::success(Lang::get('spanjaan.blogportal::lang.frontend.success.update_status'));
         // Return Response
         return [
             'status' => Lang::get('spanjaan.blogportal::lang.frontend.success.update_status'),
