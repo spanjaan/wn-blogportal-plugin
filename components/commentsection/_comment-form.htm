@@ -1,4 +1,8 @@
-<div class="comment-form">
+<div class="comment-form bg-secondary p-3 rounded-2">
+<div class="mb-2">
+<h2 class="text-center">Leave a Comment</h2>
+<hr>
+</div>
     {% if not currentUserCanComment %}
     <div class="alert alert-info">
         {% if commentsMode == 'open' %}
@@ -32,7 +36,7 @@
                 class="form-label">{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}</label>
             <input id="{{ username_id }}" type="text" name="{{ username_name }}" value=""
                 placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}" class="form-control"
-                required />
+                pattern="[A-Za-z ]+" minlength="3" maxlength="12" required />
         </div>
 
         <div class="col-12 col-md-6">
@@ -86,18 +90,22 @@
         {% endif %}
 
         {% if showCommentFormCaptcha %}
-        <div class="col-12 d-flex">
-            <div class="flex-auto">
-                <img id="{{ __SELF__.id }}_captchaImage" src="{{ captchaImage }}" style="width: 113px;"
-                    class="comment-form-captcha" />
-            </div>
-            <div class="flex-fill ps-5">
-                <div class="input-group">
-                    <input id="{{ __SELF__.id }}_captcha" name="comment_captcha" class="form-control form-control-sm"
-                        placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.captcha_placeholder' | trans }}"
-                        autocomplete="off" required />
-                    <button type="button" class="btn btn-sm btn-secondary" data-blogportal-handler="onReloadCaptcha"
-                        data-blogportal-id="{{ __SELF__.id }}">{{ 'spanjaan.blogportal::lang.frontend.comments.captcha_reload' | trans }}</button>
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row align-items-center">
+                <div class="me-md-3 mb-3 mb-md-0 text-center text-md-start bg-warning p-2 rounded-2">
+                    <img id="{{ __SELF__.id }}_captchaImage" src="{{ captchaImage }}" style="width: 113px;"
+                        class="comment-form-captcha" />
+                </div>
+                <div class="flex-grow-1">
+                    <div class="input-group">
+                        <input id="{{ __SELF__.id }}_captcha" name="comment_captcha" class="form-control"
+                            placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.captcha_placeholder' | trans }}"
+                            autocomplete="off" required />
+                        <button type="button" class="btn btn-sm btn-primary" data-blogportal-handler="onReloadCaptcha"
+                            data-blogportal-id="{{ __SELF__.id }}">
+                            {{ 'spanjaan.blogportal::lang.frontend.comments.captcha_reload' | trans }}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -108,16 +116,16 @@
             <label for="{{ __SELF__.id }}_username" class="form-label"></label>
             <input id="{{ __SELF__.id }}_username" type="text" name="comment_user" autocomplete="off" value=""
                 placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}"
-                class="form-control from-control-blogportal-special-assignment" />
+                class="form-control special-assignment" />
 
             <label for="{{ __SELF__.id }}_email" class="form-label"></label>
             <input id="{{ __SELF__.id }}_email" type="email" name="comment_email" autocomplete="off" value=""
                 placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.email' | trans }}"
-                class="form-control from-control-blogportal-special-assignment" />
+                class="form-control special-assignment" />
         </div>
         {% endif %}
 
-        <div class="col-12 text-right text-end">
+        <div class="col-12 text-center">
             {% if showCommentFormHoneypot %}
             <input type="hidden" name="comment_honey" value="{{ honeypotTime }}" />
             {% endif %}
@@ -125,10 +133,10 @@
             <input type="hidden" name="comment_validation" value="{{ validationHash }}" />
             <input type="hidden" name="comment_form_id" value="{{ __SELF__.id }}" />
 
-            <button id="{{ __SELF__.id }}_cancel" type="button" class="btn btn-secondary me-2"
+            <button id="{{ __SELF__.id }}_cancel" type="button" class="btn btn-warning hidden me-md-2"
                 data-blogportal-handler="onCancelReply"
-                style="display:none;">{{ 'spanjaan.blogportal::lang.frontend.comments.cancel_reply' | trans }}</button>
-            <button id="{{ __SELF__.id }}_submit" type="submit" class="btn btn-primary"
+                >{{ 'spanjaan.blogportal::lang.frontend.comments.cancel_reply' | trans }}</button>
+            <button id="{{ __SELF__.id }}_submit" type="submit" class="btn mt-2 mt-md-0 btn-primary"
                 data-blogportal-handler="onComment">{{ 'spanjaan.blogportal::lang.frontend.comments.submit_comment' | trans }}</button>
         </div>
     </div>

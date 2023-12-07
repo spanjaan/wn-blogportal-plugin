@@ -5,9 +5,7 @@
         factory();
     }
 }(function () {
-    const wn = {
-        ajax: $(this).request
-    };
+
 
     class BlogPortalComments {
 
@@ -120,13 +118,13 @@
          */
         callWinter(method, data, config) {
             return new Promise((resolve, reject) => {
-                wn.ajax(method, Object.assign({
+                Snowboard.request(this.parent, method, Object.assign({
                     data,
                     success: function (data, responseCode, xhr) {
-                        resolve({ data, responseCode, xhr, wn: this });
+                        resolve({ data, responseCode, xhr, snowboard: this });
                     },
                     error: function (data, responseCode, xhr) {
-                        reject({ data, responseCode, xhr, wn: this });
+                        reject({ data, responseCode, xhr, snowboard: this });
                     }
                 }, typeof config === 'object' ? config : {}));
             });
@@ -213,9 +211,9 @@
         }
 
         /**
-         * Create Reply Form
-         * @param {HTMLElement} el 
-         */
+          * Create Reply Form
+          * @param {HTMLElement} el 
+          */
         onCreateReply(el) {
             if (!el.dataset.blogportalId) {
                 return false;
@@ -232,6 +230,9 @@
             if (parent) {
                 this.showLoading(parent.querySelectorAll('[data-blogportal-handler]'));
             }
+
+            // Check if there's an existing reply element
+            const existingReply = form.querySelector('.reply');
 
             // Call AJAX backend
             this.callWinter('onCreateReply', {
@@ -250,7 +251,18 @@
                     hidden.name = 'comment_parent';
                     hidden.value = data.comment.id;
                     form.appendChild(hidden);
-                    form.insertBefore(this.stringToElement(data.reply), form.children[0]);
+
+                    // Create the new reply element
+                    let replyElement = this.stringToElement(data.reply);
+                    replyElement.classList.add('reply'); // Add a class to the new reply element for identification
+
+                    // If there's an existing reply, replace it with the new one
+                    if (existingReply) {
+                        form.replaceChild(replyElement, existingReply);
+                    } else {
+                        // If no existing reply, insert the new reply element at the beginning of the form
+                        form.insertBefore(replyElement, form.children[0]);
+                    }
                 },
                 ({ data, responseCode, xhr }) => {
                     if (parent) {
@@ -260,6 +272,7 @@
                 }
             );
         }
+
 
         /**
          * Cancel Reply Form
@@ -342,36 +355,38 @@
             this.showLoading(form.querySelectorAll('button'));
 
             // Call AJAX backend
-            this.callWinter('onComment', Object.fromEntries([...(new FormData(form)).entries()])).then(
-                ({ data, responseCode, xhr }) => {
+            this.callWinter('onComment', Object.fromEntries([...(new FormData(form)).entries()]))
+                .then(({ data }) => {
                     this.hideLoading(form.querySelectorAll('button'));
 
                     let comments = this.stringToElement(data.comments);
                     this.parent.innerHTML = comments.innerHTML;
+                    console.log(data.message);
+                    let alert = this.createAlert('success', data.message);
+                    form.insertBefore(alert, form.children[0]);
                 },
-                ({ data, responseCode, xhr }) => {
-                    this.hideLoading(form.querySelectorAll('button'));
+                    ({ data }) => {
+                        this.hideLoading(form.querySelectorAll('button'));
+                        if (typeof data === 'object') {
+                            let alert = this.createAlert('danger', data.message || data.X_WINTER_ERROR_MESSAGE);
 
-                    if (typeof data === 'object') {
-                        let alert = this.createAlert('danger', data.message || data.X_WINTER_ERROR_MESSAGE);
+                            let formAlert = form.querySelector('.alert');
+                            if (formAlert) {
+                                formAlert.replaceWith(alert);
+                            } else {
+                                form.insertBefore(alert, form.children[0]);
+                            }
 
-                        let formAlert = form.querySelector('.alert');
-                        if (formAlert) {
-                            formAlert.replaceWith(alert);
+                            let image = form.querySelector('img.comment-form-captcha');
+                            if (data.captchaImage && image) {
+                                image.src = data.captchaImage;
+                            }
                         } else {
-                            form.insertBefore(alert, form.children[0]);
+                            alert(typeof data === 'object' ? data.result : data);
                         }
 
-                        let image = form.querySelector('img.comment-form-captcha');
-                        if (data.captchaImage && image) {
-                            image.src = data.captchaImage;
-                        }
-                    } else {
-                        alert(typeof data === 'object' ? data.result : data);
                     }
-
-                }
-            );
+                );
         }
     }
     Array.from(document.querySelectorAll('[data-blogportal-comments]')).map(el => {

@@ -15,7 +15,7 @@ modelClass: SpAnjaan\BlogPortal\Models\Comment
 title: spanjaan.blogportal::lang.model.comments.manage
 
 # Link URL for each record
-recordUrl: spanjaan/blogportal/comments/update/:id
+recordUrl: spanjaan/blogportal/comments/preview/:id
 
 # Message to display if the list is empty
 noRecordsMessage: backend::lang.list.no_records

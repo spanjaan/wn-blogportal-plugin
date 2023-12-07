@@ -1,6 +1,6 @@
 <?php if ($comment): ?>
 <div class="comment-header">
-    <span><?= $comment->parent ? Lang::get('spanjaan.blogportal::lang.frontend.comments.reply_by'): Lang::get('spanjaan.blogportal::lang.frontend.comments.comment_by') ?></span>
+    <span><?= $comment->parent ? Lang::get('spanjaan.blogportal::lang.frontend.comments.reply_by') : Lang::get('spanjaan.blogportal::lang.frontend.comments.comment_by') ?></span>
     <b><?= $comment->display_name ?></b>
     <span><?= Lang::get('spanjaan.blogportal::lang.frontend.comments.on') ?></span>
     <?php if ($comment->post->url): ?>
@@ -10,30 +10,40 @@
     <?php endif; ?>
 </div>
 
-<div class="comment-article overflow-auto mt-2 mb-auto" style="max-height: 80px">
+<div class="comment-article">
     <?= $comment->content; ?>
 </div>
-<div class="comment-footer d-flex mt-4 align-items-center">
+<div class="comment-footer">
     <div class="text-muted">
         <?= $comment->created_at->format('M. j, Y - H:i'); ?>
     </div>
-    <div class="ms-auto">
+    <div class="status-button">
         <?php if ($comment->status === 'pending'): ?>
-        <button type="button" data-request="onChangeStatus"
+        <button 
+            type="button" 
+            data-request="onChangeStatus"
             data-request-data="comment_id: '<?= $comment->id ?>', status: 'spam'"
-            data-request-success="(typeof oc === 'undefined'? $.oc : oc)['flashMsg']({ type: 'success', 'message': data.status });Object.entries(data.counts).map(([t,c]) => document.querySelector(`[data-counter='${t}']`).innerText=c)"
-            data-request-error="(typeof oc === 'undefined'? $.oc : oc)['flashMsg']({ type: 'error', 'message': data.result })"
-            class="btn btn-sm btn-danger"><?= Lang::get('spanjaan.blogportal::lang.frontend.comments.spam') ?></button>
-        <button type="button" data-request="onChangeStatus"
+            data-request-success="Object.entries(data.counts).map(([t, c]) => document.querySelector(`[data-counter='${t}']`).innerText = c);"
+            class="btn btn-sm btn-danger" 
+            data-request-confirm="<?= Lang::get('spanjaan.blogportal::lang.report.comments.spam_confirm') ?>">
+            <?= Lang::get('spanjaan.blogportal::lang.frontend.comments.spam') ?>
+        </button>
+        <button type="button" 
+            data-request="onChangeStatus"
             data-request-data="comment_id: '<?= $comment->id ?>', status: 'reject'"
-            data-request-success="(typeof oc === 'undefined'? $.oc : oc)['flashMsg']({ type: 'success', 'message': data.status });Object.entries(data.counts).map(([t,c]) => document.querySelector(`[data-counter='${t}']`).innerText=c)"
-            data-request-error="(typeof oc === 'undefined'? $.oc : oc)['flashMsg']({ type: 'error', 'message': data.result })"
-            class="btn btn-sm btn-secondary"><?= Lang::get('spanjaan.blogportal::lang.frontend.comments.reject') ?></button>
-        <button type="button" data-request="onChangeStatus"
+            data-request-success="Object.entries(data.counts).map(([t, c]) => document.querySelector(`[data-counter='${t}']`).innerText = c);"
+            class="btn btn-sm btn-warning"
+            data-request-confirm="<?=Lang::get('spanjaan.blogportal::lang.report.comments.reject_confirm') ?>">
+            <?= Lang::get('spanjaan.blogportal::lang.frontend.comments.reject') ?>
+        </button>
+        <button type="button" 
+            data-request="onChangeStatus"
             data-request-data="comment_id: '<?= $comment->id ?>', status: 'approve'"
-            data-request-success="(typeof oc === 'undefined'? $.oc : oc)['flashMsg']({ type: 'success', 'message': data.status });Object.entries(data.counts).map(([t,c]) => document.querySelector(`[data-counter='${t}']`).innerText=c)"
-            data-request-error="(typeof oc === 'undefined'? $.oc : oc)['flashMsg']({ type: 'error', 'message': data.result })"
-            class="btn btn-sm btn-primary ms-3"><?= Lang::get('spanjaan.blogportal::lang.frontend.comments.approve') ?></button>
+            data-request-success="Object.entries(data.counts).map(([t, c]) => document.querySelector(`[data-counter='${t}']`).innerText = c);"
+            class="btn btn-sm btn-success"
+            data-request-confirm="<?= Lang::get('spanjaan.blogportal::lang.report.comments.approve_confirm') ?>">
+            <?= Lang::get('spanjaan.blogportal::lang.frontend.comments.approve') ?>
+        </button>
         <?php endif; ?>
     </div>
 </div>

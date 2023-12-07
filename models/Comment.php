@@ -219,7 +219,7 @@ class Comment extends Model
             $email = md5('none');
         }
 
-        return 'https://www.gravatar.com/avatar/' . $email . '?s='. $size .'&d=mp';
+        return 'https://www.gravatar.com/avatar/' . $email . '?s=' . $size . '&d=mp';
     }
 
     /**
@@ -390,5 +390,15 @@ class Comment extends Model
     public function spam(): bool
     {
         return $this->changeStatus('spam');
+    }
+
+    /**
+     * [ACTION] Pending Comment
+     *
+     * @return boolean
+     */
+    public function pending(): bool
+    {
+        return $this->changeStatus('pending');
     }
 }

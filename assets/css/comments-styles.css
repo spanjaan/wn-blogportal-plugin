@@ -1,0 +1,20 @@
+/* Backend comments list row styling */
+.comment-pending th,
+.comment-pending td {
+ background: #e1d6ff !important;
+}
+
+.comment-spam th,
+.comment-spam td {
+ background: #ffc1c1 !important;
+}
+
+.comment-rejected th,
+.comment-rejected td {
+ background: #ffc6f6 !important;
+}
+
+.comment-approved th,
+.comment-approved td {
+ background: #d4ffd2 !important;
+}

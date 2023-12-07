@@ -57,9 +57,9 @@ class Tags extends ComponentBase
             'tagPage' => [
                 'title'             => 'spanjaan.blogportal::lang.components.tags.tags_page',
                 'description'       => 'spanjaan.blogportal::lang.components.tags.tags_page_comment',
-                'type'              => 'dropdown',
+                'type'              => 'string',
                 'default'           => 'blog/tag',
-                'group'             => 'winter.blog::lang.settings.group_links',
+
             ],
             'onlyPromoted' => [
                 'title'             => 'spanjaan.blogportal::lang.components.tags.only_promoted',
@@ -118,6 +118,6 @@ class Tags extends ComponentBase
         $amount = intval($this->property('amount'));
         $query->limit($amount);
 
-        return $query->get()->each(fn ($tag) => $tag->setUrl($this->tagPage, $this->controller));
+        return $query->get()->each(fn($tag) => $tag->setUrl($this->tagPage, $this->controller));
     }
 }

@@ -1,6 +1,6 @@
 <?php Block::put('breadcrumb') ?>
     <ul>
-        <li><a href="<?= Backend::url('spanjaan/blogportal/tags') ?>">Comments</a></li>
+        <li><a href="<?= Backend::url('spanjaan/blogportal/comments') ?>">Comments</a></li>
         <li><?= e($this->pageTitle) ?></li>
     </ul>
 <?php Block::endPut() ?>
@@ -19,7 +19,7 @@
                     type="submit"
                     data-request="onSave"
                     data-hotkey="ctrl+s, cmd+s"
-                    data-load-indicator="<?= e(trans('backend::lang.form.creating_name', ['name'=>$formRecordName])) ?>"
+                    data-load-indicator="<?= e(trans('backend::lang.form.creating_name', ['name' => $formRecordName])) ?>"
                     class="btn btn-primary">
                     <?= e(trans('backend::lang.form.create')) ?>
                 </button>
@@ -28,7 +28,7 @@
                     data-request="onSave"
                     data-request-data="close:1"
                     data-hotkey="ctrl+enter, cmd+enter"
-                    data-load-indicator="<?= e(trans('backend::lang.form.creating_name', ['name'=>$formRecordName])) ?>"
+                    data-load-indicator="<?= e(trans('backend::lang.form.creating_name', ['name' => $formRecordName])) ?>"
                     class="btn btn-default">
                     <?= e(trans('backend::lang.form.create_and_close')) ?>
                 </button>
@@ -43,6 +43,6 @@
 <?php else: ?>
 
     <p class="flash-message static error"><?= e($this->fatalError) ?></p>
-    <p><a href="<?= Backend::url('spanjaan/blogportal/tags') ?>" class="btn btn-default"><?= e(trans('backend::lang.form.return_to_list')) ?></a></p>
+    <p><a href="<?= Backend::url('spanjaan/blogportal/comments') ?>" class="btn btn-default"><?= e(trans('backend::lang.form.return_to_list')) ?></a></p>
 
 <?php endif ?>

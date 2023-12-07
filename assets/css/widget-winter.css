@@ -140,39 +140,7 @@
     white-space: nowrap;
 }
 
-.blogportal-report-widget .list-group {
-    border-radius: 0.3rem;
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 0;
-    padding-left: 0;
-}
-
-.blogportal-report-widget .list-group-item-action {
-    color: #506880;
-    text-align: inherit;
-    width: 100%;
-}
-
-.blogportal-report-widget .list-group-item {
-    background-color: #fff;
-    border: 1px solid rgba(0, 0, 0, .125);
-    color: #212529;
-    display: block;
-    padding: 0.5rem 1rem;
-    position: relative;
-}
-
-.blogportal-report-widget .list-group-item:last-child {
-    border-bottom-left-radius: inherit;
-    border-bottom-right-radius: inherit;
-}
-
-.blogportal-report-widget .list-group-item:first-child {
-    border-top-left-radius: inherit;
-    border-top-right-radius: inherit;
-}
-
+/* Commentlist */
 .blogportal-report-widget .nav {
     display: flex;
     flex-wrap: wrap;
@@ -182,11 +150,63 @@
 }
 
 .blogportal-report-widget .nav .nav-link {
-    color: #3498db;
+    color: #ffffff;
     display: block;
+    border: none;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    margin-right: 2rem;
+    background-color: #FFC436;
+    font-weight: bold;
     padding: 0.5rem 1rem;
-    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+
 }
+
+.blogportal-report-widget .nav .nav-link:hover {
+    background-color: rgb(51, 210, 30);
+}
+
+.blogportal-report-widget .nav .nav-link.active {
+    background-color: rgb(0, 0, 255);
+    pointer-events: none;
+}
+
+.blogportal-report-widget .list-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.blogportal-report-widget .list-group-item {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, .125);
+    color: #212529;
+    margin-top: 2px;
+    padding: 6px;
+    border-radius: 3px;
+}
+
+.blogportal-report-widget .list-group-item .icon {
+    color: #ff6600;
+    margin-right: 10px;
+}
+
+.blogportal-report-widget .comment-panel {
+    padding: 5px;
+    overflow: auto;
+}
+
+.blogportal-report-widget .comment-panel .comment-fotter {
+    padding: 5px;
+    overflow: auto;
+}
+
+.blogportal-report-widget .comment-panel .status-button {
+    margin-top: 10px;
+}
+
+/* Commentlist End */
 
 .blogportal-report-widget .card {
     word-wrap: break-word;

@@ -1,24 +1,20 @@
-<div class="comment-list">
-    {% macro renderRecursive(context, items, parent = null, level = 1) %}
+<div class="mt-2">
+    <hr>
+    <h2 class="mt-2">{{ post.blogportal.comments_count }} Comments</h2>
+    {% macro renderRecursive(context, items, parent = null) %}
     {% for comment in items %}
-    {% if level == 1 %}
-    {% set paddingLeft = 0 %}
-    {% else %}
-    {% set paddingLeft = 42 %}
-    {% endif %}
-
     {% if comment.status == 'pending' %}
-    <div id="comment-{{ comment.id }}" class="comment-item comment-level-{{ level }} my-2"
-        style="padding-left: {{ paddingLeft }}px">
+    <div id="comment-{{ comment.id }}" class="card bg-danger-subtle mb-2">
         {% partial '@_single' comment=comment %}
     </div>
     {% else %}
-    <div id="comment-{{ comment.id }}" class="comment-item comment-level-{{ level }} my-2"
-        style="padding-left: {{ paddingLeft }}px">
+    <div id="comment-{{ comment.id }}" class="card bg-secondary mb-2">
         {% partial '@_single' comment=comment %}
-
         {% if context.showCommentsHierarchical and comment.children %}
-        {{ _self.renderRecursive(context, comment.children, comment, level + 1) }}
+        <div class="position-relative ps-2">
+            <span class="position-absolute top-0 start-0 w-1 h-100 bg-primary"></span>
+            {{ _self.renderRecursive(context, comment.children, comment) }}
+        </div>
         {% endif %}
     </div>
     {% endif %}

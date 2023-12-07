@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Components;
 
-use AjaxException;
 use Lang;
 use Config;
 use Crypt;
 use Request;
 use Session;
+use Response;
 use Backend\Facades\BackendAuth;
 use Cms\Classes\ComponentBase;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -19,6 +19,7 @@ use SpAnjaan\BlogPortal\Models\Comment;
 use SpAnjaan\BlogPortal\Models\Visitor;
 use System\Classes\PluginManager;
 use System\Classes\UpdateManager;
+use ValidationException;
 
 class CommentSection extends ComponentBase
 {
@@ -60,7 +61,7 @@ class CommentSection extends ComponentBase
             'postSlug' => [
                 'title'             => 'spanjaan.blogportal::lang.components.comments_section.post_slug',
                 'description'       => 'spanjaan.blogportal::lang.components.comments_section.post_slug_comment',
-                'type'              => 'dropdown',
+                'type'              => 'string',
                 'default'           => '',
             ],
             'commentsPerPage' => [
@@ -103,11 +104,10 @@ class CommentSection extends ComponentBase
             'hideOnDislikes' => [
                 'title'             => 'spanjaan.blogportal::lang.components.comments_section.hide_on_dislike',
                 'description'       => 'spanjaan.blogportal::lang.components.comments_section.hide_on_dislike_comment',
-                'type'              => 'string',
+                'type'              => 'checkbox',
                 'default'           => '0'
             ],
             'formPosition' => [
-                'group'             => 'spanjaan.blogportal::lang.components.comments_section.group_form',
                 'title'             => 'spanjaan.blogportal::lang.components.comments_section.form_position',
                 'description'       => 'spanjaan.blogportal::lang.components.comments_section.form_position_comment',
                 'type'              => 'dropdown',
@@ -119,7 +119,6 @@ class CommentSection extends ComponentBase
                 ]
             ],
             'disableForm' => [
-                'group'             => 'spanjaan.blogportal::lang.components.comments_section.group_form',
                 'title'             => 'spanjaan.blogportal::lang.components.comments_section.disable_form',
                 'description'       => 'spanjaan.blogportal::lang.components.comments_section.disable_form_comment',
                 'type'              => 'checkbox',
@@ -174,7 +173,7 @@ class CommentSection extends ComponentBase
 
                 if (($last = strpos($slug, '}}')) > 0) {
                     if (($index = strpos($slug, ':')) > 0) {
-                        $slug = trim(substr($slug, $index+1, $last-4));
+                        $slug = trim(substr($slug, $index + 1, $last - 4));
                         $slug = $this->param($slug);
                     } else {
                         $slug = null;
@@ -202,7 +201,7 @@ class CommentSection extends ComponentBase
         $page = empty($this->property('pageNumber')) ? intval(get('cpage')) : intval($this->property('pageNumber'));
         $limit = $this->property('commentsPerPage');
         if ($page > 1) {
-            $offset = ($page-1) * $this->property('commentsPerPage');
+            $offset = ($page - 1) * $this->property('commentsPerPage');
         } else {
             $offset = 0;
         }
@@ -253,14 +252,14 @@ class CommentSection extends ComponentBase
 
         $pageName = $this->getPage()->getBaseFileName();
         return new LengthAwarePaginator(
-            $result->slice($offset, $offset+$limit),
+            $result->slice($offset, $offset + $limit),
             $result->count(),
             $limit,
             $page,
             [
                 'path' => $this->controller->pageUrl($pageName, ['slug' => $this->post->slug]),
                 'fragment' => $this->property('commentAnchor') ?? 'comments',
-                'pageName' =>'cpage'
+                'pageName' => 'cpage'
             ]
         );
     }
@@ -362,7 +361,7 @@ class CommentSection extends ComponentBase
 
             $this->page['comments'] = $this->getComments();
 
-            $this->addJs('/plugins/spanjaan/blogportal/assets/js/comments-winter.js');
+            $this->addJs('/plugins/spanjaan/blogportal/assets/js/new.js');
             $this->addCss('/plugins/spanjaan/blogportal/assets/css/comments.css');
         }
     }
@@ -542,16 +541,16 @@ class CommentSection extends ComponentBase
     protected function validateAjaxMethod()
     {
         if (empty($post = $this->getPost())) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_post'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_post'));
         }
         $this->prepareVars($post);
 
         // Check if Comment exists
         if (empty($comment_id = input('comment_id'))) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.missing_comment_id'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.missing_comment_id'));
         }
         if (empty($comment = Comment::where('id', $comment_id)->first())) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.invalid_comment_id'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.invalid_comment_id'));
         }
 
         // Return Comment
@@ -569,19 +568,19 @@ class CommentSection extends ComponentBase
 
         // Get new Status
         if (empty($status = input('status')) || !in_array($status, ['favorite', 'approve', 'reject', 'spam'])) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
         }
 
         // Favorite Comment
         if ($status === 'favorite') {
             // Check if Favorite is enabled
             if ($this->config('author_favorites') !== '1') {
-                throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.disabled_method'));
+                throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.disabled_method'));
             }
 
             // Check if current user can favorite
             if (!$this->page['currentUserCanFavorite']) {
-                throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to'));
+                throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to'));
             }
 
             // Set Data
@@ -593,17 +592,17 @@ class CommentSection extends ComponentBase
         elseif ($status === 'approve' || $status === 'reject' || $status === 'spam') {
             // Check if current user is backend user
             if (!$this->page['currentUserIsBackend']) {
-                throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to'));
+                throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to'));
             }
 
             // Check if current user is allowed to moderatoe
             if (!$this->page['currentUserCanModerate']) {
-                throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.no_permissions_for'));
+                throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.no_permissions_for'));
             }
 
             // Check if State can be changed (Frontend Moderation is limited to pending comments)
             if ($comment->status !== 'pending') {
-                throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
+                throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
             }
             $result = $comment->{$status}();
         }
@@ -617,7 +616,7 @@ class CommentSection extends ComponentBase
                 ])
             ];
         } else {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
         }
     }
 
@@ -632,17 +631,17 @@ class CommentSection extends ComponentBase
 
         // Get new Vote
         if (empty($vote = input('vote')) || !in_array($vote, ['like', 'dislike'])) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
         }
 
         // Check if Like or dislike is enabled
         if ($this->config($vote . '_comment') !== '1') {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.disabled_method'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.disabled_method'));
         }
 
         // Check if current user can Like or Dislike
         if (!$this->page['currentUserCan' . ucfirst($vote)]) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to'));
         }
 
         // Add Vote & Return
@@ -654,7 +653,7 @@ class CommentSection extends ComponentBase
                 ])
             ];
         } else {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
         }
     }
 
@@ -669,12 +668,12 @@ class CommentSection extends ComponentBase
 
         // Check if form is disabled
         if (!$this->page['showCommentsForm']) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.form_disabled'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.form_disabled'));
         }
 
         // Check if current user can comment
         if (!$this->page['currentUserCanComment']) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to_comment'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to_comment'));
         }
 
         // Return Reply Partial and submit button text
@@ -724,13 +723,13 @@ class CommentSection extends ComponentBase
     public function onComment()
     {
         if (empty($post = $this->getPost())) {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_post'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_post'));
         }
         $this->prepareVars($post);
 
         // Validate CSRF Token
         if (!$this->verifyCsrfToken()) {
-            throw new AjaxException([
+            throw new ValidationException([
                 'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.invalid_csrf_token')
             ]);
         }
@@ -739,7 +738,7 @@ class CommentSection extends ComponentBase
         $hasCaptcha = false;
         $hasHoneypot = false;
         if (!$this->verifyValidationCode(input('comment_validation'), input('comment_time'), $hasCaptcha, $hasHoneypot)) {
-            throw new AjaxException([
+            throw new ValidationException([
                 'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.invalid_validation_code')
             ]);
         }
@@ -750,10 +749,10 @@ class CommentSection extends ComponentBase
                 $builder = (new \Gregwar\Captcha\CaptchaBuilder())->build();
                 Session::put('blogportalCaptchaPhrase', $builder->getPhrase());
 
-                throw new AjaxException([
+                return Response::json([
                     'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.invalid_captcha') . Session::get('blogportalCaptchaPhrase'),
                     'captchaImage' => $builder->inline()
-                ]);
+                ], 500);
             }
         }
 
@@ -762,7 +761,7 @@ class CommentSection extends ComponentBase
             $honey = input('comment_honey');
 
             if (empty($honey) || !empty(input('comment_user')) || !empty(input('comment_email'))) {
-                throw new AjaxException([
+                throw new ValidationException([
                     'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.honeypot_filled')
                 ]);
             }
@@ -772,16 +771,12 @@ class CommentSection extends ComponentBase
 
         // Check current User
         if (!$this->page['currentUserCanComment']) {
-            throw new AjaxException([
-                'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to_commentd')
-            ]);
+            throw new ValidationException(['message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to_commentd')]);
         }
 
         // Validate Terms of Service
         if ($this->page['showCommentFormTos'] && input('comment_tos') !== '1') {
-            throw new AjaxException([
-                'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.tos_not_accepted')
-            ]);
+            throw new ValidationException(['message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.tos_not_accepted')]);
         }
 
         // Validate Form Submission
@@ -820,14 +815,14 @@ class CommentSection extends ComponentBase
         if (!empty($parentId)) {
             // Comment ID unknown
             if (empty($parent = Comment::where('id', $parentId)->first())) {
-                throw new AjaxException([
+                throw new ValidationException([
                     'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.parent_not_found')
                 ]);
             }
 
             // Comment not on the same Post
             if (intval($parent->post_id) !== intval($post->id)) {
-                throw new AjaxException([
+                throw new ValidationException([
                     'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.parent_invalid')
                 ]);
             }
@@ -847,10 +842,11 @@ class CommentSection extends ComponentBase
 
             return [
                 'status' => 'success',
-                'comments' => $this->renderPartial('@default')
+                'comments' => $this->renderPartial('@default'),
+                'message' => 'Comment added successfully' // Add a success message
             ];
         } else {
-            throw new AjaxException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
+            throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
         }
     }
 }

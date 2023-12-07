@@ -293,12 +293,12 @@ return [
     ],
 
     'sorting' => [
-        'blogportalviews_asc' => 'Views (ascending)',
-        'blogportalviews_desc' => 'Views (descending)',
-        'blogportalunique_views_asc' => 'Unique Views (ascending)',
-        'blogportalunique_views_desc' => 'Unique Views (descending)',
-        'blogportalcomments_count_asc' => 'Number of Comments (ascending)',
-        'blogportalcomments_count_desc' => 'Number of Comments (descending)',
+        'blogportal_views_asc' => 'Views (ascending)',
+        'blogportal_views_desc' => 'Views (descending)',
+        'blogportal_unique_views_asc' => 'Unique Views (ascending)',
+        'blogportal_unique_views_desc' => 'Unique Views (descending)',
+        'blogportal_comments_count_asc' => 'Number of Comments (ascending)',
+        'blogportal_comments_count_desc' => 'Number of Comments (descending)',
         'created_at_desc' => 'Published (descending)',
         'created_at_asc' => 'Published (ascending)',
         'comments_count_desc' => 'Comments Counter (descending)',
@@ -400,5 +400,15 @@ return [
         'posts_statistics' => [
             'label' => 'BlogPortal - Posts Statistics'
         ]
+
+    ],
+
+    'report' => [
+        'comments' => [
+            'spam_confirm' => 'Are you sure you want to Mark as Spam this comment?',
+            'reject_confirm' => 'Are you sure you want to reject this comment?',
+            'approve_confirm' => 'Are you sure you want to approve this comment?'
+        ]
+
     ]
 ];

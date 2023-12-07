@@ -28,21 +28,21 @@
                 <ul class="list-unstyled list-inline">
                     <li class="list-inline-item me-0">
                         <button type="button"
-                            class="btn btn-link btn-sm <?= $order === 'by_published'? 'disabled': '' ?>"
+                            class="btn btn-link btn-sm <?= $order === 'by_published' ? 'disabled' : '' ?>"
                             data-order="by_published" data-request="onChangePostList"
                             data-request-data="order: 'by_published'"
                             data-request-success="[].map.call(this.parentElement.querySelectorAll('button'), (e) => e.classList[e.dataset.order == data.order? 'add': 'remove']('disabled'))">
                             <?= Lang::get('spanjaan.blogportal::lang.components.post.by_published') ?>
                         </button>
                         &bullet;
-                        <button type="button" class="btn btn-link btn-sm <?= $order === 'by_views'? 'disabled': '' ?>"
+                        <button type="button" class="btn btn-link btn-sm <?= $order === 'by_views' ? 'disabled' : '' ?>"
                             data-order="by_views" data-request="onChangePostList" data-request-data="order: 'by_views'"
                             data-request-success="[].map.call(this.parentElement.querySelectorAll('button'), (e) => e.classList[e.dataset.order == data.order? 'add': 'remove']('disabled'))">
                             <?= Lang::get('spanjaan.blogportal::lang.components.post.by_views') ?>
                         </button>
                         &bullet;
                         <button type="button"
-                            class="btn btn-link btn-sm <?= $order === 'by_visitors'? 'disabled': '' ?>"
+                            class="btn btn-link btn-sm <?= $order === 'by_visitors' ? 'disabled' : '' ?>"
                             data-order="by_visitors" data-request="onChangePostList"
                             data-request-data="order: 'by_visitors'"
                             data-request-success="[].map.call(this.parentElement.querySelectorAll('button'), (e) => e.classList[e.dataset.order == data.order? 'add': 'remove']('disabled'))">
