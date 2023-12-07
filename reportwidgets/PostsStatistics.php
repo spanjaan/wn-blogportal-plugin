@@ -18,9 +18,7 @@ class PostsStatistics extends ReportWidgetBase
      *
      * @return void
      */
-    public function init()
-    {
-    }
+    public function init() {}
 
     /**
      * Initialize the properties of this widget.
@@ -141,8 +139,8 @@ class PostsStatistics extends ReportWidgetBase
             $end = date('Y-m-d', $timestamp + ($step * 24 * 60 * 60)) . ' 00:00:00';
 
             $count = $posts->whereBetween('published_at', [$start, $end]);
-            $result['views'][] = '[' . $timestamp*1000 . ', ' . $count->sum('spanjaan_blogportal_views') . ']';
-            $result['visitors'][] = '[' . $timestamp*1000 . ', ' . $count->sum('spanjaan_blogportal_unique_views') . ']';
+            $result['views'][] = '[' . $timestamp * 1000 . ', ' . $count->sum('spanjaan_blogportal_views') . ']';
+            $result['visitors'][] = '[' . $timestamp * 1000 . ', ' . $count->sum('spanjaan_blogportal_unique_views') . ']';
         }
 
         return $result;
