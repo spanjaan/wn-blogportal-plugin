@@ -19,9 +19,7 @@ class PostsList extends ReportWidgetBase
      *
      * @return void
      */
-    public function init()
-    {
-    }
+    public function init() {}
 
     /**
      * Initialize the properties of this widget.
@@ -32,8 +30,8 @@ class PostsList extends ReportWidgetBase
     {
         return [
             'postPage' => [
-                'title'         => 'Winter.blog::lang.settings.posts_post',
-                'description'   => 'Winter.blog::lang.settings.posts_post_description',
+                'title'         => 'winter.blog::lang.settings.posts_post',
+                'description'   => 'winter.blog::lang.settings.posts_post_description',
                 'type'          => 'dropdown',
                 'default'       => 'blog/post',
             ],
@@ -98,13 +96,13 @@ class PostsList extends ReportWidgetBase
         } elseif ($order === 'by_views') {
             $posts = $query
                 ->where('published', '1')
-                ->orderBy('ratmd_bloghub_views', 'DESC')
+                ->orderBy('spanjaan_blogportal_views', 'DESC')
                 ->orderBy('published_at', 'DESC')
                 ->get();
         } elseif ($order === 'by_visitors') {
             $posts = $query
                 ->where('published', '1')
-                ->orderBy('ratmd_bloghub_unique_views', 'DESC')
+                ->orderBy('spanjaan_blogportal_unique_views', 'DESC')
                 ->orderBy('published_at', 'DESC')
                 ->get();
         } else {
@@ -112,7 +110,7 @@ class PostsList extends ReportWidgetBase
         }
 
         if (!empty($postPage = $this->property('postPage'))) {
-            $posts->each(fn ($item) => $item->setUrl($postPage, new Controller(Theme::getActiveTheme())));
+            $posts->each(fn($item) => $item->setUrl($postPage, new Controller(Theme::getActiveTheme())));
         }
         return $posts;
     }
