@@ -93,6 +93,9 @@ class PopularPosts extends Posts
      */
     protected function loadPopularPosts()
     {
-        return Post::orderBy('spanjaan_blogportal_views', 'desc')->get();
+        $popularPosts = Post::orderBy('spanjaan_blogportal_views', 'desc')->get();
+
+        return $popularPosts;
     }
 }
+

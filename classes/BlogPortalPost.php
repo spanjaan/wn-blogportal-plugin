@@ -40,23 +40,68 @@ class BlogPortalPost
     public function __construct(Post $model)
     {
         $this->model = $model;
-
         $ctrl = $this->getController();
-        if ($ctrl && ($layout = $ctrl->getLayout()) !== null) {
-            if (($posts = $layout->getComponent('blogPosts')) !== null) {
-                $props = $posts->getProperties();
-                $model->setUrl($props['postPage'], $ctrl);
-                $model->categories->each(fn ($cat) => $cat->setUrl($props['categoryPage'], $ctrl));
-            }
 
-            $props = [
-                'archiveAuthor' => 'blog/author',
-                'archiveDate' => 'blog/date',
-                'archiveTag' => 'blog/tag',
-            ];
-            $model->spanjaan_blogportal_tags->each(fn ($tag) => $tag->setUrl($props['archiveTag'], $ctrl));
+        if ($ctrl && ($layout = $ctrl->getLayout()) !== null) {
+            $posts = $layout->getComponent('blogPosts');
+
+            // Check if $posts is not null before accessing properties
+            if ($posts !== null) {
+                // Get the base URL for all pages
+                $baseUrl = $this->getBaseUrl($ctrl);
+
+                // Set the URL for the post page
+                $model->setUrl($baseUrl . '/post', $ctrl);
+
+                // Set the URL for categories
+                $model->categories->each(function ($cat) use ($baseUrl) {
+                    $cat->setUrl($baseUrl . '/category', $ctrl);
+                });
+
+                // Set the URL for tags
+                $model->spanjaan_blogportal_tags->each(function ($tag) use ($baseUrl) {
+                    $tag->setUrl($baseUrl . '/tag', $ctrl);
+                });
+
+                // Set the URL for author archive
+                $model->spanjaan_blogportal_tags->each(function ($tag) use ($baseUrl) {
+                    $tag->setUrl($baseUrl . '/author', $ctrl);
+                });
+
+                // Set the URL for date archive
+                $model->spanjaan_blogportal_tags->each(function ($tag) use ($baseUrl) {
+                    $tag->setUrl($baseUrl . '/date', $ctrl);
+                });
+
+                // Set the URL for tag archive
+                $model->spanjaan_blogportal_tags->each(function ($tag) use ($baseUrl) {
+                    $tag->setUrl($baseUrl . '/tag', $ctrl);
+                });
+            }
         }
     }
+
+    /**
+     * Get the base URL for all pages
+     *
+     * @param Controller $controller
+     * @return string
+     */
+    protected function getBaseUrl(Controller $controller): string
+    {
+        $layout = $controller->getLayout();
+        $posts = $layout->getComponent('blogPosts');
+        
+        // Check if $posts is not null before accessing properties
+        if ($posts !== null) {
+            $props = $posts->getProperties();
+            return $props['postPage'];
+        }
+
+        // Default base URL if $posts is null
+        return '/';
+    }
+
 
 
     /**

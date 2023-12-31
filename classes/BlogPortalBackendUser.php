@@ -63,8 +63,10 @@ class BlogPortalBackendUser
     public function getUrl()
     {
         $ctrl = $this->getController();
-        if ($ctrl instanceof Controller && !empty($ctrl->getLayout())) {
-            return $ctrl->pageUrl($viewBag['blogportalAuthorPage'] ?? 'blog/author', [
+        if ($ctrl instanceof Controller) {
+            $authorPage = 'blog/author';
+    
+            return $ctrl->pageUrl($authorPage, [
                 'id'   => $this->model->id,
                 'slug' => $this->getSlug(),
             ]);
@@ -72,6 +74,7 @@ class BlogPortalBackendUser
             return null;
         }
     }
+    
 
     /**
      * Return Author Slug
