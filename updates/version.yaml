@@ -1,5 +1,5 @@
 1.0.0:
-    - 'First version of BlogExt'
+    - 'First version of BlogPortal'
 1.0.1:
     - 'Create Tags Table'
     - v1.0.1/create_tags_table.php
