@@ -1,7 +1,17 @@
-v1.0.0:
-  - "Initial Release"
-  - create_tags_table.php
-  - update_posts_table.php
-  - create_visitors_table.php
-  - update_backend_users_table.php
-  - create_comments_table.php
+1.0.0:
+    - 'First version of BlogExt'
+1.0.1:
+    - 'Create Tags Table'
+    - v1.0.1/create_tags_table.php
+1.0.2:
+    - 'Create Visitors Table'
+    - v1.0.2/create_visitors_table.php
+1.0.3:
+    - 'Create Views Table in Winter.Blog Posts Model'
+    - v1.0.3/update_posts_table.php
+1.0.4:
+    - 'Create Comments Table'
+    - v1.0.4/create_comments_table.php
+1.0.5:
+    - 'Update Backend User table'
+    - v1.0.5/update_backend_users_table.php

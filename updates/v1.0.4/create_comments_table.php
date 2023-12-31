@@ -2,7 +2,7 @@
 
 namespace SpAnjaan\BlogPortal\Updates;
 
-use Schema;
+use Winter\Storm\Support\Facades\Schema;
 use Winter\Storm\Database\Schema\Blueprint;
 use Winter\Storm\Database\Updates\Migration;
 use System\Classes\PluginManager;
@@ -22,8 +22,6 @@ class CreateCommentsTable extends Migration
         }
 
         Schema::create('spanjaan_blogportal_comments', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
-
             $table->increments('id');
             $table->integer('post_id')->unsigned();
             $table->string('status', 32)->default('pending');

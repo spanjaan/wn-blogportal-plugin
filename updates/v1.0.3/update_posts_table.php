@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Updates;
 
-use Schema;
+use Winter\Storm\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Winter\Storm\Database\Updates\Migration;
 use System\Classes\PluginManager;
