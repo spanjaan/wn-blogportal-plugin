@@ -23,7 +23,7 @@
     "require": {
         "php": ">= 7.4 || >= 8.0",
         "composer/installers": "~1.0",
-        "gregwar/captcha": "^1.1"
+        "gregwar/captcha": "^1.2"
     },
     "config": {
         "optimize-autoloader": true,
