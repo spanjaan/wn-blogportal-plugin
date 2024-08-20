@@ -2,7 +2,7 @@
     "name": "spanjaan/wn-blogportal-plugin",
     "type": "winter-plugin",
     "version": "1.0.6",
-    "description": "Extends Winter's Blog plugin with tag, archives and more.",
+    "description": "Extends Winter's Blog plugin with tag, archives and comments and post share.",
     "keywords": [
         "winter", 
         "blogportal",
