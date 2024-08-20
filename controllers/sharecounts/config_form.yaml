@@ -1,0 +1,16 @@
+# ===================================
+#  Form Behavior Config
+# ===================================
+
+# Record name
+name: 'spanjaan.blogportal::lang.model.sharecounts.label'
+
+# Model Form Field configuration
+form: $/spanjaan/blogportal/models/sharecount/fields.yaml
+
+# Model Class name
+modelClass: SpAnjaan\BlogPortal\Models\Sharecount
+
+# Default redirect location
+defaultRedirect: spanjaan/blogportal/sharecounts
+

@@ -1,0 +1,50 @@
+# ===================================
+#  List Column Definitions
+# ===================================
+
+columns:
+    id:
+        label: 'spanjaan.blogportal::lang.model.general.id'
+        searchable: true
+        sortable: true
+
+    post_title:
+        label: 'spanjaan.blogportal::lang.model.general.post_title'
+        relation: post
+        select: title
+        searchable: true
+        sortable: true
+
+    facebook:
+        label: 'spanjaan.blogportal::lang.model.general.facebook_shares'
+        searchable: true
+        sortable: true
+
+    twitter:
+        label: 'spanjaan.blogportal::lang.model.general.twitter_shares'
+        searchable: true
+        sortable: true
+
+    whatsapp:
+        label: 'spanjaan.blogportal::lang.model.general.whatsapp_shares'
+        searchable: true
+        sortable: true
+
+    linkedin:
+        label: 'spanjaan.blogportal::lang.model.general.linkedin_shares'
+        searchable: true
+        sortable: true
+
+    created_at:
+        label: 'spanjaan.blogportal::lang.model.general.created_at'
+        type: datetime
+        searchable: true
+        sortable: true
+        invisible: true
+
+    updated_at:
+        label: 'spanjaan.blogportal::lang.model.general.updated_at'
+        type: datetime
+        searchable: true
+        sortable: true
+        invisible: true

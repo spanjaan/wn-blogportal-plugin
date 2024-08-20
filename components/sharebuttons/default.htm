@@ -1,0 +1,96 @@
+<div class="border rounded-3 py-4 px-2 bg-light shadow-sm">
+    <div class="text-center">
+        <h2 class="heading mb-4" style="font-weight: bold; font-size: 1.75rem; color: #333;">
+            Share this post to your favorite social media
+        </h2>
+        <div class="share-buttons d-flex justify-content-center flex-wrap gap-3">
+            <button class="btn btn-facebook text-white" type="button" data-platform="facebook" style="background-color: #3b5998;">
+                <i class="fab fa-facebook-f"></i> Facebook
+            </button>
+            <button class="btn btn-twitter text-white" type="button" data-platform="twitter" style="background-color: #55acee;">
+                <i class="fab fa-twitter"></i> Twitter
+            </button>
+            <button class="btn btn-linkedin text-white" type="button" data-platform="linkedin" style="background-color: #0077b5;">
+                <i class="fab fa-linkedin-in"></i> LinkedIn
+            </button>
+            <button class="btn btn-whatsapp text-white" type="button" data-platform="whatsapp" style="background-color: #25D366;">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+            </button>
+        </div>
+        <div class="total-shares mt-3" style="font-size: 1.25rem; color: #555;">
+            Total Shares: <span id="total-share-count">{{ shareCounts.total ?? 0 }}</span>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.share-buttons button').forEach(function(button) {
+    button.removeEventListener('click', onShareClick);
+    button.addEventListener('click', onShareClick);
+});
+
+function onShareClick(event) {
+    event.preventDefault();
+
+    var button = event.currentTarget;
+    button.disabled = true; // Disable the button to prevent multiple clicks
+
+    var platform = button.getAttribute('data-platform');
+    var shareUrl = window.location.href;
+    var postId = '{{ post.id }}'; // Ensure this variable is correctly rendered in the template
+
+    console.log(`Preparing to share on ${platform}...`);
+    console.log(`Post ID: ${postId}`);
+
+    // Use Snowboard to make the AJAX request
+    Snowboard.request(null, 'onShare', {
+        data: {
+            platform: platform,
+            postId: postId
+        },
+        success: function(response) {
+            console.log('Share count updated:', response.shareCounts);
+
+            // Update the total share count on the page
+            if (response.shareCounts && response.shareCounts.total !== undefined) {
+                document.getElementById('total-share-count').textContent = response.shareCounts.total;
+            }
+
+            // Open the share window only after the share count has been updated
+            openShareWindow(platform, shareUrl);
+
+            // Re-enable the button after a successful request
+            button.disabled = false;
+        },
+        error: function() {
+            console.error('An error occurred while processing the share request.');
+
+            // Re-enable the button even if there's an error
+            button.disabled = false;
+        }
+    });
+}
+
+function openShareWindow(platform, url) {
+    var shareUrl;
+    switch (platform) {
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+            break;
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(document.title)}`;
+            break;
+        case 'linkedin':
+            shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+            break;
+        case 'whatsapp':
+            shareUrl = `https://wa.me/?text=${encodeURIComponent(url)}`;
+            break;
+        default:
+            console.error('Unknown platform: ' + platform);
+            return;
+    }
+    console.log('Opening share window with URL:', shareUrl);
+    window.open(shareUrl, 'shareWindow', 'width=600,height=400');
+}
+</script>
