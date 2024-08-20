@@ -126,50 +126,41 @@ class PostsByDate extends Posts
     }
 
 
-    /**
-     * List Posts
-     *
-     * @return mixed
-     */
     protected function listPosts()
     {
         $date = $this->date;
-        $category = $this->category ? $this->category->id : null;
-        $categorySlug = $this->category ? $this->category->slug : null;
-
+    
+        // Ensure $this->category is initialized or handle null case
+        $categoryId = isset($this->category) ? $this->category->id : null;
+        $categorySlug = isset($this->category) ? $this->category->slug : null;
+    
         // Start and End Date
         if (isset($date['day'])) {
-            $start_date = $date['year'] . '-' . substr('0' . $date['month'], -2) . '-' . substr('0' . $date['day'], -2) . ' 00:00:00';
-            $end_date = $date['year'] . '-' . substr('0' . $date['month'], -2) . '-' . substr('0' . $date['day'], -2) . ' 23:59:59';
+            $start_date = $date['year'] . '-' . str_pad((string)$date['month'], 2, '0', STR_PAD_LEFT) . '-' . str_pad((string)$date['day'], 2, '0', STR_PAD_LEFT) . ' 00:00:00';
+            $end_date = $date['year'] . '-' . str_pad((string)$date['month'], 2, '0', STR_PAD_LEFT) . '-' . str_pad((string)$date['day'], 2, '0', STR_PAD_LEFT) . ' 23:59:59';
         } elseif (isset($date['month'])) {
-            $last_day = date('t', strtotime("{$date['year']}-{$date['month']}-01"));
-            $start_date = $date['year'] . '-' . substr('0' . $date['month'], -2) . '-01 00:00:00';
-            $end_date = $date['year'] . '-' . substr('0' . $date['month'], -2) . '-' . $last_day. ' 23:59:59';
-        } elseif (isset($date['week'])) {
-            $datetime = new \DateTime();
-            $datetime->setISODate($date['year'], $date['week']);
-
-            $start_date = $datetime->format('Y-m-d') . ' 00:00:00';
-            $datetime->modify('+6 days');
-            $end_date = $datetime->format('Y-m-d') . ' 23:59:59';
+            $last_day = date('t', strtotime("{$date['year']}-" . str_pad((string)$date['month'], 2, '0', STR_PAD_LEFT) . '-01'));
+            $start_date = $date['year'] . '-' . str_pad((string)$date['month'], 2, '0', STR_PAD_LEFT) . '-01 00:00:00';
+            $end_date = $date['year'] . '-' . str_pad((string)$date['month'], 2, '0', STR_PAD_LEFT) . '-' . $last_day . ' 23:59:59';
         } else {
             $start_date = $date['year'] . '-01-01 00:00:00';
             $end_date = $date['year'] . '-12-31 23:59:59';
         }
-
+    
         /*
          * List all the posts, eager load their categories
          */
         $isPublished = !parent::checkEditor();
-
+    
         $posts = Post::with(['categories', 'featured_images', 'spanjaan_blogportal_tags'])
             ->whereBetween('published_at', [$start_date, $end_date])
+            ->where('published_at', '<=', date('Y-m-d')) // Filter published posts up to today
             ->listFrontEnd([
                 'page'             => $this->property('pageNumber'),
                 'sort'             => $this->property('sortOrder'),
                 'perPage'          => $this->property('postsPerPage'),
                 'search'           => trim(input('search') ?? ''),
-                'category'         => $category,
+                'category'         => $categoryId,
                 'published'        => $isPublished,
                 'exceptPost'       => is_array($this->property('exceptPost'))
                     ? $this->property('exceptPost')
@@ -178,21 +169,21 @@ class PostsByDate extends Posts
                     ? $this->property('exceptCategories')
                     : preg_split('/,\s*/', $this->property('exceptCategories'), -1, PREG_SPLIT_NO_EMPTY),
             ]);
-
+    
         /*
          * Add a "url" helper attribute for linking to each post and category
          */
         $posts->each(function ($post) use ($categorySlug) {
             $post->setUrl($this->postPage, $this->controller, ['category' => $categorySlug]);
-
+    
             $post->categories->each(function ($category) {
                 $category->setUrl($this->categoryPage, $this->controller);
             });
         });
-
+    
         return $posts;
     }
-
+    
     /**
      * Load & Validate Date
      *
@@ -203,60 +194,66 @@ class PostsByDate extends Posts
         if (empty($dateFilter = $this->property('dateFilter'))) {
             return [null, null];
         }
-
-        // Get Date
-        if (strpos($dateFilter, '_') === 4) {
-            $year = substr($dateFilter, 0, 4);
-            $week = substr($dateFilter, 5);
-        } elseif (strlen($dateFilter) >= 4) {
-            $year = substr($dateFilter, 0, 4);
-            $month = strlen($dateFilter) >= 7 ? substr($dateFilter, 5, 2) : null;
-            $day = strlen($dateFilter) == 10 ? substr($dateFilter, 8, 2) : null;
-        } else {
+    
+        // Parse date filter
+        $parts = explode('-', $dateFilter);
+        
+        // Check if it's a year and month format (YYYY-MM)
+        if (count($parts) === 2 && strlen($parts[0]) === 4 && strlen($parts[1]) === 1) {
+            $year = $parts[0];
+            $month = str_pad($parts[1], 2, '0', STR_PAD_LEFT);
+            $day = null;
+            $type = 'month';
+        }
+        // Check if it's a year and month and day format (YYYY-MM-DD)
+        elseif (count($parts) === 3 && strlen($parts[0]) === 4 && strlen($parts[1]) === 2 && strlen($parts[2]) === 2) {
+            $year = $parts[0];
+            $month = $parts[1];
+            $day = $parts[2];
+            $type = 'day';
+        } 
+        // Check if it's just a year format (YYYY)
+        elseif (strlen($dateFilter) === 4) {
+            $year = $dateFilter;
+            $month = null;
+            $day = null;
+            $type = 'year';
+        } 
+        else {
             return [null, null];
         }
+    
         $date = [];
-        $type = null;
-
+    
         // Validate Year
         if (is_numeric($year) && ($year = intval($year)) && $year >= 1970 && $year <= intval(date('Y'))) {
             $date['year'] = $year;
-            $type = 'year';
         } else {
             return [null, null];
         }
-
-        // Validate Week
-        if (!empty($week)) {
-            if (is_numeric($week) && ($week = intval($week)) && $week <= intval(date('W', strtotime('December 28th')))) {
-                $date['week'] = $week;
-                return [$date, 'week'];
-            }
-        }
-
+    
         // Validate Month
-        if (!empty($month)) {
+        if ($month !== null) {
             if (is_numeric($month) && ($month = intval($month)) && $month >= 1 && $month <= 12) {
                 $date['month'] = $month;
-                $type = 'month';
             } else {
                 return [null, null];
             }
         }
-
+    
         // Validate Day
-        if (!empty($day)) {
+        if ($day !== null) {
             if (is_numeric($day) && ($day = intval($day)) && $day >= 1 && $day <= intval(date('t', strtotime("$year-$month-01")))) {
                 $date['day'] = $day;
-                $type = 'day';
             } else {
                 return [null, null];
             }
         }
-
-        // Return Result
+    
         return [$date, $type];
     }
+    
+
 
     /**
      * Format Date

@@ -60,56 +60,8 @@ class BlogPortalPostModel extends ExtensionBase
             });
         });
 
-        // Register Deprecated Methods
-        $model->bindEvent('model.afterFetch', fn () => $this->registerDeprecatedMethods($model));
     }
 
-    /**
-     * Register deprecated methods
-     *
-     * @param Post $model
-     * @return void
-     */
-    protected function registerDeprecatedMethods(Post $model)
-    {
-        $blogportal = $this->getBlogportalAttribute();
-
-        // Dynamic Method - Receive Similar Posts from current Model
-        $model->addDynamicMethod(
-            'blogportal_similar_posts',
-            fn ($limit = 3, $exclude = null) => $blogportal->getRelated($limit, $exclude)
-        );
-
-        // Dynamic Method - Receive Random Posts from current Model
-        $model->addDynamicMethod(
-            'blogportal_random_posts',
-            fn ($limit = 3, $exclude = null) => $blogportal->getRandom($limit, $exclude)
-        );
-
-        // Dynamic Method - Get Next Post in the same category
-        $model->addDynamicMethod(
-            'blogportal_next_post_in_category',
-            fn () => $blogportal->getNext(1, true)
-        );
-
-        // Dynamic Method - Get Previous Post in the same category
-        $model->addDynamicMethod(
-            'blogportal_prev_post_in_category',
-            fn () => $blogportal->getPrevious(1, true)
-        );
-
-        // Dynamic Method - Get Next Post
-        $model->addDynamicMethod(
-            'blogportal_next_post',
-            fn () => $blogportal->getNext()
-        );
-
-        // Dynamic Method - Get Previous Post
-        $model->addDynamicMethod(
-            'blogportal_prev_post',
-            fn () => $blogportal->getPrevious()
-        );
-    }
 
     /**
      * Get main BlogPortal Space
@@ -124,27 +76,4 @@ class BlogPortalPostModel extends ExtensionBase
         return $this->blogportalSet;
     }
 
-    /**
-     * After Fetch Hook
-     *
-     * @return void
-     */
-    protected function afterFetch()
-    {
-        $tags = $this->model->spanjaan_blogportal_tags;
-        if ($tags->count() === 0) {
-            return;
-        }
-
-        /** @var Controller|null */
-        $ctrl = Controller::getController();
-        if ($ctrl instanceof Controller && !empty($ctrl->getLayout())) {
-            $viewBag = $ctrl->getLayout()->getViewBag()->getProperties();
-
-            // Set Tag URL
-            if (isset($viewBag['blogportalTagPage'])) {
-                $tags->each(fn ($tag) => $tag->setUrl($viewBag['blogportalTagPage'], $ctrl));
-            }
-        }
-    }
 }

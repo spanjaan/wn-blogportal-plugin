@@ -8,6 +8,7 @@ use Cms\Classes\Controller;
 use Illuminate\Support\Collection;
 use Winter\Blog\Models\Post;
 use SpAnjaan\BlogPortal\Models\Visitor;
+use SpAnjaan\BlogPortal\Models\Sharecount;
 
 class BlogPortalPost
 {
@@ -18,19 +19,21 @@ class BlogPortalPost
      */
     protected Post $model;
 
+    protected ?BlogPortalPost $blogportalSet;
+
     /**
      * Post Tag Collection
      *
      * @var ?Collection
      */
-    protected ?Collection $tagCollection;
+    protected ?Collection $tagCollection = null;
 
     /**
      * Post Promoted Tag Collection
      *
      * @var ?Collection
      */
-    protected ?Collection $promotedTagCollection;
+    protected ?Collection $promotedTagCollection = null;
 
     /**
      * Create a new BlogPost
@@ -40,86 +43,43 @@ class BlogPortalPost
     public function __construct(Post $model)
     {
         $this->model = $model;
+
         $ctrl = $this->getController();
-
         if ($ctrl && ($layout = $ctrl->getLayout()) !== null) {
-            $posts = $layout->getComponent('blogPosts');
-
-            // Check if $posts is not null before accessing properties
-            if ($posts !== null) {
-                // Get the base URL for all pages
-                $baseUrl = $this->getBaseUrl($ctrl);
-
-                // Set the URL for the post page
-                $model->setUrl($baseUrl . '/post', $ctrl);
-
-                // Set the URL for categories
-                $model->categories->each(function ($cat) use ($baseUrl) {
-                    $cat->setUrl($baseUrl . '/category', $ctrl);
-                });
-
-                // Set the URL for tags
-                $model->spanjaan_blogportal_tags->each(function ($tag) use ($baseUrl) {
-                    $tag->setUrl($baseUrl . '/tag', $ctrl);
-                });
-
-                // Set the URL for author archive
-                $model->spanjaan_blogportal_tags->each(function ($tag) use ($baseUrl) {
-                    $tag->setUrl($baseUrl . '/author', $ctrl);
-                });
-
-                // Set the URL for date archive
-                $model->spanjaan_blogportal_tags->each(function ($tag) use ($baseUrl) {
-                    $tag->setUrl($baseUrl . '/date', $ctrl);
-                });
-
-                // Set the URL for tag archive
-                $model->spanjaan_blogportal_tags->each(function ($tag) use ($baseUrl) {
-                    $tag->setUrl($baseUrl . '/tag', $ctrl);
-                });
+            if (($posts = $layout->getComponent('blogPosts')) !== null) {
+                $props = $posts->getProperties();
+                $model->setUrl($props['postPage'], $ctrl);
+                $model->categories->each(fn($cat) => $cat->setUrl($props['categoryPage'], $ctrl));
             }
+
+            // Check only new settings
+            $viewBag = $layout->getViewBag()->getProperties();
+            $props = [
+                'archiveAuthor' => $viewBag['blogportalAuthorPage'] ?? 'blog/author',
+                'archiveDate' => $viewBag['blogportalDatePage'] ?? 'blog/date',
+                'archiveTag' => $viewBag['blogportalTagPage'] ?? 'blog/tag',
+            ];
+            
+            $model->spanjaan_blogportal_tags->each(fn($tag) => $tag->setUrl($props['archiveTag'], $ctrl));
         }
     }
-
-    /**
-     * Get the base URL for all pages
-     *
-     * @param Controller $controller
-     * @return string
-     */
-    protected function getBaseUrl(Controller $controller): string
-    {
-        $layout = $controller->getLayout();
-        $posts = $layout->getComponent('blogPosts');
-        
-        // Check if $posts is not null before accessing properties
-        if ($posts !== null) {
-            $props = $posts->getProperties();
-            return $props['postPage'];
-        }
-
-        // Default base URL if $posts is null
-        return '/';
-    }
-
-
 
     /**
      * Call Dynamic Property Method
      *
      * @param string $method
      * @param ?array $arguments
-     * @return void
+     * @return mixed
      */
     public function __call($method, $arguments = [])
     {
-        $methodName = str_replace('_', '', 'get' . ucwords($method, '_'));
+        $methodName = 'get' . str_replace('_', '', ucwords($method, '_'));
 
         if (method_exists($this, $methodName)) {
             return $this->{$methodName}(...$arguments);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -135,42 +95,33 @@ class BlogPortalPost
     /**
      * Get Estimated ReadTime
      *
+     * @param bool $string
      * @return array|string
      */
-    public function getDetailReadTime($string = true)
+    public function getDetailReadTime(bool $string = true)
     {
         $content = strip_tags($this->model->content_html);
         $count = str_word_count($content);
-
-        $amount = $count / 200;
-        $minutes = intval($amount);
-        $seconds = intval(($minutes > 0 ? $amount - $minutes : $amount) * 0.60 * 100);
+        $minutes = intval($count / 200);
+        $seconds = intval(($count % 200) / 200 * 60);
 
         if (!$string) {
-            return [
-                'minutes' => $minutes,
-                'seconds' => $seconds,
-            ];
-        } else {
-            if ($minutes === 0) {
-                return trans('spanjaan.blogportal::lang.model.post.read_time_sec', [
-                    'sec' => $seconds
-                ]);
-            } else {
-                return trans('spanjaan.blogportal::lang.model.post.read_time', [
-                    'min' => $minutes,
-                    'sec' => $seconds
-                ]);
-            }
+            return ['minutes' => $minutes, 'seconds' => $seconds];
         }
+
+        return $minutes === 0
+            ? trans('spanjaan.blogportal::lang.model.post.read_time_sec', ['sec' => $seconds])
+            : trans('spanjaan.blogportal::lang.model.post.read_time', ['min' => $minutes, 'sec' => $seconds]);
     }
 
     /**
      * Get Published Ago Date/Time
      *
+     * @param bool $long
+     * @param mixed $until
      * @return string
      */
-    public function getDetailPublishedAgo($long = false, $until = null): string
+    public function getDetailPublishedAgo(bool $long = false, $until = null): string
     {
         return $this->model->published_at->diffForHumans();
     }
@@ -188,9 +139,9 @@ class BlogPortalPost
     /**
      * Get Post Comments Count
      *
-     * @return integer
+     * @return int
      */
-    public function getCommentsCount()
+    public function getCommentsCount(): int
     {
         return $this->model->spanjaan_blogportal_comments->count();
     }
@@ -198,47 +149,60 @@ class BlogPortalPost
     /**
      * Get Post Tags
      *
-     * @return mixed
+     * @return Collection
      */
-    public function getTags()
+    public function getTags(): Collection
     {
-        if (empty($this->tagCollection)) {
+        if ($this->tagCollection === null) {
             $this->tagCollection = $this->model->spanjaan_blogportal_tags;
 
             if (($ctrl = $this->getController()) !== null) {
                 $viewBag = $ctrl->getLayout()->getViewBag()->getProperties();
                 if (isset($viewBag['blogportalTagPage'])) {
-                    $this->tagCollection->each(
-                        fn ($tag) => $tag->setUrl($viewBag['blogportalTagPage'], $ctrl)
-                    );
+                    $this->tagCollection->each(fn($tag) => $tag->setUrl($viewBag['blogportalTagPage'], $ctrl));
                 }
             }
         }
+
         return $this->tagCollection;
     }
 
     /**
      * Get Promoted Post Tags
      *
-     * @return mixed
+     * @return Collection
      */
-    public function getPromotedTags()
+    public function getPromotedTags(): Collection
     {
-        if (empty($this->promotedTagCollection)) {
+        if ($this->promotedTagCollection === null) {
             $this->promotedTagCollection = $this->model->spanjaan_blogportal_tags->where('promote', '1');
 
             if (($ctrl = $this->getController()) !== null) {
                 $viewBag = $ctrl->getLayout()->getViewBag()->getProperties();
                 if (isset($viewBag['blogportalTagPage'])) {
-                    $this->promotedTagCollection->each(
-                        fn ($tag) => $tag->setUrl($viewBag['blogportalTagPage'], $ctrl)
-                    );
+                    $this->promotedTagCollection->each(fn($tag) => $tag->setUrl($viewBag['blogportalTagPage'], $ctrl));
                 }
             }
         }
+
         return $this->promotedTagCollection;
     }
+    
+    /**
+     * Get Post Share Count
+     *
+     * @return int
+     */
+    public function getSharesCount(): int
+    {
+        // Fetch the share count record for this post
+        $shareCount = \SpAnjaan\BlogPortal\Models\Sharecount::where('post_id', $this->model->id)->first();
 
+        // Calculate total shares
+        return $shareCount ? $shareCount->facebook + $shareCount->twitter + $shareCount->linkedin + $shareCount->whatsapp : 0;
+    }
+
+    
     /**
      * Get View Counter
      *
@@ -246,11 +210,9 @@ class BlogPortalPost
      */
     public function getViews()
     {
-        if (!empty($this->model->spanjaan_blogportal_views)) {
-            return intval($this->model->spanjaan_blogportal_views);
-        } else {
-            return 0;
-        }
+        return !empty($this->model->spanjaan_blogportal_views)
+            ? intval($this->model->spanjaan_blogportal_views)
+            : 0;
     }
 
     /**
@@ -260,11 +222,9 @@ class BlogPortalPost
      */
     public function getUniqueViews()
     {
-        if (!empty($this->model->spanjaan_blogportal_unique_views)) {
-            return intval($this->model->spanjaan_blogportal_unique_views);
-        } else {
-            return 0;
-        }
+        return !empty($this->model->spanjaan_blogportal_unique_views)
+            ? intval($this->model->spanjaan_blogportal_unique_views)
+            : 0;
     }
 
     /**
@@ -274,6 +234,7 @@ class BlogPortalPost
      */
     public function getVisitors()
     {
+        // Implement if needed
     }
 
     /**
@@ -298,128 +259,145 @@ class BlogPortalPost
     }
 
     /**
-     * Get Next Blog Posts
+     * Get the next blog post.
      *
      * @param integer $limit
      * @param boolean $sameCategories
      * @return mixed
      */
-    public function getNext($limit = 1, $sameCategories = false)
+    public function getNext(int $limit = 1, bool $sameCategories = false)
     {
-        $query = $this->model->applySibling()
-            ->with('categories');
+        $query = $this->model->applySibling(1)->with('categories');
 
         if ($sameCategories) {
-            $categories = $this->model->categories->map(fn ($item) => $item->id)->all();
-
+            $categories = $this->model->categories->pluck('id')->all();
             $query->whereHas('categories', function ($query) use ($categories) {
-                return $query->whereIn('winter_blog_categories.id', $categories);
+                $query->whereIn('winter_blog_categories.id', $categories);
             });
         }
 
-        if ($limit > 1) {
-            $query->limit($limit);
+        $nextPost = $limit > 1 ? $query->limit($limit)->get() : $query->first();
+
+        if ($nextPost) {
+            $this->setPostUrl($nextPost);
         }
 
-        return $limit > 1 ? $query->get() : $query->first();
+        return $nextPost;
     }
 
     /**
-     * Get Previous Blog Posts
+     * Get the previous blog post.
      *
      * @param integer $limit
      * @param boolean $sameCategories
      * @return mixed
      */
-    public function getPrevious($limit = 1, $sameCategories = false)
+    public function getPrevious(int $limit = 1, bool $sameCategories = false)
     {
-        $query = $this->model->applySibling(-1)
-            ->with('categories');
+        $query = $this->model->applySibling(-1)->with('categories');
 
         if ($sameCategories) {
-            $categories = $this->model->categories->map(fn ($item) => $item->id)->all();
-
+            $categories = $this->model->categories->pluck('id')->all();
             $query->whereHas('categories', function ($query) use ($categories) {
-                return $query->whereIn('winter_blog_categories.id', $categories);
+                $query->whereIn('winter_blog_categories.id', $categories);
             });
         }
 
-        if ($limit > 1) {
-            $query->limit($limit);
+        $prevPost = $limit > 1 ? $query->limit($limit)->get() : $query->first();
+
+        if ($prevPost) {
+            $this->setPostUrl($prevPost);
         }
 
-        return $limit > 1 ? $query->get() : $query->first();
+        return $prevPost;
     }
 
     /**
-     * Get Previous Blog Posts (Alias)
+     * Set the URL for a post or a collection of posts.
      *
-     * @param integer $limit
-     * @param boolean $sameCategories
-     * @return mixed
+     * @param mixed $posts
+     * @return void
      */
-    public function getPrev($limit = 1, $sameCategories = false)
+    protected function setPostUrl($posts)
     {
-        return $this->getPrevious($limit, $sameCategories);
+        $ctrl = $this->getController();
+        if ($ctrl && ($layout = $ctrl->getLayout()) !== null) {
+            // Attempt to get the blogPosts component
+            $postsComponent = $layout->getComponent('blogPosts');
+
+            // If the component exists, use its properties; otherwise, provide a fallback
+            $props = $postsComponent ? $postsComponent->getProperties() : ['postPage' => 'blog/post'];
+
+            if ($posts instanceof \Illuminate\Support\Collection) {
+                $posts->each(function ($post) use ($props, $ctrl) {
+                    $post->setUrl($props['postPage'], $ctrl);
+                });
+            } else {
+                $posts->setUrl($props['postPage'], $ctrl);
+            }
+        }
     }
 
+
+   
     /**
      * Get Similar Blog Posts
      *
-     * @param integer $limit
+     * @param int $limit
      * @param array $exclude
      * @return mixed
      */
-    public function getRelated($limit = 5, $exclude = [])
+    public function getRelated(int $limit = 5, array $exclude = [])
     {
-        $tags = $this->model->spanjaan_blogportal_tags->map(fn ($item) => $item->id)->all();
-        $categories = $this->model->categories->map(fn ($item) => $item->id)->all();
-
-        // Exclude
-        $excludes = [];
-        if (!empty($exclude)) {
-            $excludes = is_array($exclude) ? $exclude : [$exclude];
-            $excludes = array_map('intval', $excludes);
-        }
-        $excludes[] = $this->model->id;
-
-        // Query
+        $tags = $this->model->spanjaan_blogportal_tags->pluck('id')->all();
+        $categories = $this->model->categories->pluck('id')->all();
+    
+        $excludes = array_merge([$this->model->id], $exclude);
+    
         $query = Post::with(['categories', 'featured_images', 'spanjaan_blogportal_tags'])
-            ->whereHas('categories', function ($query) use ($categories) {
-                return $query->whereIn('winter_blog_categories.id', $categories);
+            ->where(function ($query) use ($categories, $tags) {
+                $query->whereHas('categories', function ($query) use ($categories) {
+                    $query->whereIn('winter_blog_categories.id', $categories);
+                })
+                ->orWhereHas('spanjaan_blogportal_tags', function ($query) use ($tags) {
+                    $query->whereIn('spanjaan_blogportal_tags.id', $tags);
+                });
             })
-            ->whereHas('spanjaan_blogportal_tags', function ($query) use ($tags) {
-                return $query->whereIn('spanjaan_blogportal_tags.id', $tags);
-            })
+            ->whereNotIn('id', $excludes)
             ->limit($limit);
-
-        // Return Result
-        $result = $query->get()->filter(fn ($item) => !in_array($item['id'], $excludes))->all();
-        return $result;
+    
+        $relatedPosts = $query->get();
+    
+        return $relatedPosts;
     }
+    
 
     /**
      * Get Random Blog Posts
      *
-     * @param integer $limit
+     * @param int $limit
      * @param array $exclude
      * @return mixed
      */
-    public function getRandom($limit = 5, $exclude = [])
+    public function getRandom(int $limit = 5, array $exclude = [])
     {
-        // Exclude
-        $excludes = [];
-        if (!empty($exclude)) {
-            $excludes = is_array($exclude) ? $exclude : [$exclude];
-            $excludes = array_map('intval', $excludes);
-        }
-        $excludes[] = $this->model->id;
+        $excludes = array_merge([$this->model->id], array_map('intval', $exclude));
 
-        // Query
         $query = Post::with(['categories', 'featured_images', 'spanjaan_blogportal_tags'])->limit($limit);
 
-        // Return Result
-        $result = $query->get()->filter(fn ($item) => !in_array($item['id'], $excludes))->all();
-        return $result;
+        return $query->get()->filter(fn($item) => !in_array($item['id'], $excludes))->all();
+    }
+
+    /**
+     * Get BlogPortal Attribute
+     *
+     * @return BlogPortalPost
+     */
+    public function getBlogportalAttribute(): BlogPortalPost
+    {
+        if (empty($this->blogportalSet)) {
+            $this->blogportalSet = new BlogPortalPost($this->model);
+        }
+        return $this->blogportalSet;
     }
 }

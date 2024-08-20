@@ -186,7 +186,7 @@ return [
             'no_permissions_for' => 'You don\'t have the permission to call this action.',
             'missing_comment_id' => 'The comment id is missing or invalid.',
             'invalid_comment_id' => 'The passed comment id does not exist.',
-            'unknown_error' => 'An unknown error occurred, please try again later.'
+            'unknown_error' => 'An unknown error occured, please try again later.'
         ],
         'success' => [
             'update_status' => 'The comment status could be successfully updated.'
@@ -213,7 +213,7 @@ return [
             'favoriteComment' => 'Favorite comments are highlighted and may be shown on top of the comments list.',
             'favoriteColumn' => 'Favorite',
             'likes' => 'Likes',
-            'dislikes' => 'Dislikes',
+            'dislikes' => 'Disikes',
             'author' => 'Auther Username',
             'authorComment' => 'The username of the author, when not written by a logged-in user.',
             'authorEmail' => 'Author E-Mail address',
@@ -286,7 +286,7 @@ return [
         'access_comments_comment' => 'Allows access to the comments submenu for all posts.',
         'manage_post_settings' => 'Manage post-related comment settings',
         'moderate_comments' => 'Moderate blog comments',
-        'delete_comments' => 'Allowed to delete published comments',
+        'delete_commpents' => 'Allowed to delete published comments',
         'access_tags' => 'Manage the blog tags',
         'access_tags_comment' => 'Allows to access the tags submenu and to set the post tags itself for all posts.',
         'promote_tags' => 'Allows to promote tags',

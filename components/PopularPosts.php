@@ -10,23 +10,28 @@ use Winter\Blog\Models\Post;
 class PopularPosts extends Posts
 {
     /**
-     * A collection of popular posts to display
-     *
-     * @var \Illuminate\Support\Collection
-     */
-    public $popularPosts;
-
-    /**
-     * Component Details
+     * Declare Component Details
      *
      * @return array
      */
-    public function componentDetails(): array
+    public function componentDetails()
     {
         return [
             'name'          => 'spanjaan.blogportal::lang.components.popularPosts.label',
             'description'   => 'spanjaan.blogportal::lang.components.popularPosts.description'
         ];
+    }
+
+    /**
+     * Component Properties
+     *
+     * @return void
+     */
+    public function defineProperties()
+    {
+        $properties = parent::defineProperties();
+        unset($properties['sortOrder']);
+        return $properties;
     }
 
     /**
@@ -36,8 +41,6 @@ class PopularPosts extends Posts
      */
     public function onRun()
     {
-        $this->popularPosts = $this->loadPopularPosts();
-
         return parent::onRun();
     }
 
@@ -57,9 +60,9 @@ class PopularPosts extends Posts
         $isPublished = !parent::checkEditor();
 
         $posts = Post::with(['categories', 'featured_images', 'spanjaan_blogportal_tags'])
+            ->orderBy('spanjaan_blogportal_views', 'desc')
             ->listFrontEnd([
                 'page'             => $this->property('pageNumber'),
-                'sort'             => $this->property('sortOrder'),
                 'perPage'          => $this->property('postsPerPage'),
                 'search'           => trim(input('search') ?? ''),
                 'category'         => $category,
@@ -85,17 +88,4 @@ class PopularPosts extends Posts
 
         return $posts;
     }
-
-    /**
-     * Load popular posts
-     *
-     * @return mixed
-     */
-    protected function loadPopularPosts()
-    {
-        $popularPosts = Post::orderBy('spanjaan_blogportal_views', 'desc')->get();
-
-        return $popularPosts;
-    }
 }
-

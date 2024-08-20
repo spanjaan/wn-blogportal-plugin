@@ -15,3 +15,7 @@
 1.0.5:
     - 'Update Backend User table'
     - v1.0.5/update_backend_users_table.php
+1.0.6:
+    - 'Create Shares Table'
+    - v1.0.6/create_sharecounts_table.php
+
