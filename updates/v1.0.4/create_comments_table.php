@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SpAnjaan\BlogPortal\Updates;
 
 use Winter\Storm\Support\Facades\Schema;

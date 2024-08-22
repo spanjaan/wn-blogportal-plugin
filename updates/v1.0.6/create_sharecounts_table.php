@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace SpAnjaan\BlogPortal\Updates;
+
 use Winter\Storm\Support\Facades\Schema;
 use Winter\Storm\Database\Schema\Blueprint;
 use Winter\Storm\Database\Updates\Migration;
