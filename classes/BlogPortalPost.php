@@ -196,13 +196,12 @@ class BlogPortalPost
     public function getSharesCount(): int
     {
         // Fetch the share count record for this post
-        $shareCount = \SpAnjaan\BlogPortal\Models\Sharecount::where('post_id', $this->model->id)->first();
+        $shareCount = Sharecount::where('post_id', $this->id)->first();
 
-        // Calculate total shares
+        // Calculate total shares if the share count record exists, otherwise return 0
         return $shareCount ? $shareCount->facebook + $shareCount->twitter + $shareCount->linkedin + $shareCount->whatsapp : 0;
     }
 
-    
     /**
      * Get View Counter
      *
