@@ -118,7 +118,7 @@ return [
             'only_promoted_comment' => 'Display only promoted tags',
             'amount' => 'Tag Amount',
             'amount_description' => 'The amount of tags to be passed to the list.',
-            'amount_validation' => 'Invalid format of the amount value.',
+            'amount_validation' => 'Invalid format of the the amount value.',
             'view' => 'Tag View',
             'view_comment' => 'Change the View of the Tag list'
         ],
@@ -143,45 +143,289 @@ return [
             'reject_title' => 'Reject this comment',
             'spam' => 'Mark as Spam',
             'spam_title' => 'Mark this comment as spam',
-            'reported_as_spam' => 'This comment was reported as spam.',
-            'approved' => 'Comment has been approved.',
-            'rejected' => 'Comment has been rejected.',
-            'spam_approved' => 'Spam comment has been approved.',
-            'spam_rejected' => 'Spam comment has been rejected.',
-            'status_changed' => 'Comment status has been changed.',
-            'status_failed' => 'Comment status change failed.',
-            'invalid_status' => 'The passed comment status is invalid.',
-            'posted' => 'Posted',
-            'in_reply_to' => 'in reply to',
-            'reply' => 'Reply',
             'like' => 'Like',
-            'likes' => 'Likes',
+            'like_title' => 'Like this Comment',
             'dislike' => 'Dislike',
-            'dislikes' => 'Dislikes',
+            'dislike_title' => 'Dislike this Comment',
+            'favorite' => 'Favorite',
+            'favorite_title' => 'Favorite this Comment',
+            'unfavorite' => 'Unfavorite',
+            'unfavorite_title' => 'Unfavorite this Comment',
+            'reply' => 'Reply',
+            'reply_title' => 'Reply to this Comment',
+            'disabled_open' => 'You\'re not allowed to comment on this post.',
+            'disabled_restricted' => 'You must be logged-in to comment on this post.',
+            'disabled_private' => 'Only registered backend users are allowed to comment on this post.',
+            'disabled_closed' => 'The comment section for this post has been closed.',
+            'awaiting_moderation' => 'Awaiting Moderation',
+            'previous' => 'Previous',
+            'next' => 'Next',
+            'replyto' => 'Reply to :name',
+            'comment_by' => 'Comment by',
+            'reply_by' => 'Reply by',
+            'by' => 'By',
+            'on' => 'on',
         ],
+        'errors' => [
+            'unknown_post' => 'The passed post id or slug is unknown or invalid.',
+            'missing_form_id' => 'The component id is missing or invalid.',
+            'form_disabled' => 'The comment form is disabled on this post.',
+            'not_allowed_to_comment' => 'You\'re not allowed to comment or reply on this post.',
+            'invalid_csrf_token' => 'The passed CSRF token is invalid. Please reload the page and try again.',
+            'invalid_validation_code' => 'The passed Comment Validation code is invalid. Please reload the page and try again.',
+            'invalid_captcha' => 'The passed Captcha Code was wrong.',
+            'honeypot_filled' => 'The passed data seems strange, please try again later.',
+            'tos_not_accepted' => 'You need to accept the Terms of Service to comment on this post.',
+            'parent_not_found' => 'The parent comment on which you tried to reply does not exist or has been deleted.',
+            'parent_invalid' => 'The parent comment on which you tried to reply is invalid or has been moved.',
+            'not_allowed_to' => 'You are not allowed to call this action.',
+            'moderate_permission' => 'You are not allowed to moderate comments.',
+            'invalid_status' => 'The passed comment status is invalid.',
+            'unknown_comment' => 'The passed comment does not exist (anymore).',
+            'disabled_method' => 'This function has been disabled by the website administrator.',
+            'no_permissions_for' => 'You don\'t have the permission to call this action.',
+            'missing_comment_id' => 'The comment id is missing or invalid.',
+            'invalid_comment_id' => 'The passed comment id does not exist.',
+            'unknown_error' => 'An unknown error occured, please try again later.'
+        ],
+        'success' => [
+            'update_status' => 'The comment status could be successfully updated.'
+        ]
     ],
 
     'model' => [
         'comments' => [
-            'published' => 'Published',
-            'draft' => 'Draft',
-            'spam' => 'Spam',
-            'deleted' => 'Deleted',
-            'approved' => 'Approved',
-            'approved_hint' => 'This comment is approved.',
-            'author' => 'Author Username',
+            'label' => 'Comments',
+            'manage' => 'Manage Comments',
+            'recordName' => 'Comment',
+            'status' => 'Comment Status',
+            'statusColumn' => 'Status',
+            'statusComment' => 'Change the current Comment Status',
+            'statusPending' => 'Pending',
+            'statusApproved' => 'Approved',
+            'statusRejected' => 'Rejected',
+            'statusSpam' => 'Spam',
             'title' => 'Comment Title',
-            'comment' => 'Comment Text',
+            'titleComment' => 'The title of the comment (depending on the BlogPortal configuration).',
+            'content' => 'Comment Content',
+            'contentComment' => 'The plain content of the comment.',
+            'favorite' => 'Favorite Comment',
+            'favoriteComment' => 'Favorite comments are highlighted and may be shown on top of the comments list.',
+            'favoriteColumn' => 'Favorite',
             'likes' => 'Likes',
             'dislikes' => 'Dislikes',
-            'author_name' => 'Name',
-            'author_email' => 'Email',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
-            'published_at' => 'Published At',
-            'status' => 'Status',
-            'ip_address' => 'IP Address',
-            'user_agent' => 'User Agent',
+            'author' => 'Author Username',
+            'authorComment' => 'The username of the author, when not written by a logged-in user.',
+            'authorEmail' => 'Author E-Mail address',
+            'authorEmailComment' => 'The E-Mail address of the author, when not written by a logged-in user.',
+            'post_visibility' => [
+                'label' => 'Comments Visibility',
+                'comment' => 'Show  or Hide the comments section on this post.'
+            ],
+            'post_mode' => [
+                'label' => 'Comment Mode',
+                'comment' => 'Change the comment mode for this post.',
+                'open' => 'Open (Everyone can comment)',
+                'restricted' => 'Restricted (Only logged-In Users can comment)',
+                'private' => 'Private (Only logged-in backend users can comment)',
+                'closed' => 'Closed (Noone can comment)'
+            ],
+            'guest' => 'Guest',
+            'seconds_ago' => 'A few seconds ago',
+            'x_ago' => ':amount :format ago',
+            'no_comment' => 'No comment available',
+            'no_further_comments' => 'No further comments available',
+        ],
+        'post' => [
+            'read_time' => 'Read Time: :min minutes :sec seconds',
+            'read_time_sec' => 'Read Time: :sec seconds',
+            'published_seconds_ago' => 'Published a few seconds ago.',
+            'published_ago' => 'Published :amount :format ago.',
+            'published_format_years' => 'years',
+            'published_format_months' => 'months',
+            'published_format_days' => 'days',
+            'published_format_hours' => 'hours',
+            'published_format_minutes' => 'minutes',
+            'statistics' => 'Post Statistics',
+        ],
+        'tags' => [
+            'label' => 'Tags',
+            'tag_create' => 'New Tag',
+            'manage' => 'Manage Tags',
+            'recordName' => 'Tag',
+            'slug' => 'Slug',
+            'slugComment' => 'Tag slugs are used for the archive pages on the frontend.',
+            'title' => 'Title',
+            'titleComment' => 'Supporting themes may show the tag title instead of the tag slug.',
+            'description' => 'Description',
+            'descriptionComment' => 'Supporting themes may show the description text on the tag archive pages.',
+            'promote' => 'Promoted Tag',
+            'promoteComment' => 'Supporting themes may highlight promoted tags in a special way.',
+            'color' => 'Color',
+            'colorComment' => 'Supporting themes may use this color to highlight this tag.',
+            'posts' => 'Assigned Posts',
+            'postsComment' => 'The single posts assigned to this tag.',
+            'postsEmpty' => 'No posts available.',
+            'postsNumber' => 'No of Posts'
+        ],
+        'users' => [
+            'displayName' => 'Display Name',
+            'displayNameComment' => 'A custom version of your name, supporting themes may show them on your posts.',
+            'authorSlug' => 'Author Slug',
+            'authorSlugComment' => 'Author slugs are used for the archive on the frontend (instead of the login name).',
+            'aboutMe' => 'About Me',
+            'aboutMeDescription' => 'A small description about yourself, supporting themes may show them on your posts.'
+        ],
+        'visitors' => [
+            'views' => 'Views / Unique'
+        ],
+        'sharecounts' => [
+            'label' => 'Share Counts',
+            'post_title' => 'Post Title',
+            'facebook_shares' => 'FB Shares',
+            'twitter_shares' => 'TW Shares',
+            'whatsapp_shares' => 'WA Shares',
+            'linkedin_shares' => 'LI Shares',
+
+        ]
+    ],
+
+    'permissions' => [
+        'access_comments' => 'Manage the blog comments',
+        'access_comments_comment' => 'Allows access to the comments submenu for all posts.',
+        'manage_post_settings' => 'Manage post-related comment settings',
+        'moderate_comments' => 'Moderate blog comments',
+        'delete_comments' => 'Allowed to delete published comments',
+        'access_tags' => 'Manage the blog tags',
+        'access_tags_comment' => 'Allows to access the tags submenu and to set the post tags itself for all posts.',
+        'promote_tags' => 'Allows to promote tags',
+        'sharecounts' => 'Manage the share counts.',
+    ],
+
+    'sorting' => [
+        'blogportal_views_asc' => 'Views (ascending)',
+        'blogportal_views_desc' => 'Views (descending)',
+        'blogportal_unique_views_asc' => 'Unique Views (ascending)',
+        'blogportal_unique_views_desc' => 'Unique Views (descending)',
+        'blogportal_comments_count_asc' => 'Number of Comments (ascending)',
+        'blogportal_comments_count_desc' => 'Number of Comments (descending)',
+        'created_at_desc' => 'Published (descending)',
+        'created_at_asc' => 'Published (ascending)',
+        'comments_count_desc' => 'Comments Counter (descending)',
+        'comments_count_asc' => 'Comments Counter (ascending)',
+        'likes_desc' => 'Likes Counter (descending)',
+        'likes_asc' => 'Likes Counter (ascending)',
+        'dislikes_desc' => 'Dislikes Counter (descending)',
+        'dislikes_asc' => 'Dislikes Counter (ascending)',
+    ],
+
+    'settings' => [
+        'config' => [
+            'label' => 'BlogPortal',
+            'description' => 'Manage the BlogPortal related settings.'
+        ],
+        
+        'blog_setting' => [
+            'tab' => 'Blog',
+            'label' => 'Richeditor Settings',
+            'rich_editor' => 'Rich Editor',
+            'rich_editor_comment' => 'Enable Richeditor in Blog post section'
+        ],
+
+        'comments' => [
+            'tab' => 'Comments',
+            'general_section' => 'General Settings',
+            'comment_form_section' => 'Form Settings',
+
+            'author_favorites' => [
+                'label' => 'Author Favorites',
+                'comment' => 'Allow authors to favourite user comments.'
+            ],
+            'like_comment' => [
+                'label' => 'Like Comments',
+                'comment' => 'Enable the Like button on each user comment.'
+            ],
+            'dislike_comment' => [
+                'label' => 'Dislike Comments',
+                'comment' => 'Enable the Dislike button on each user comment.'
+            ],
+            'restrict_to_users' => [
+                'label' => 'Like & Dislike only for users',
+                'comment' => 'Restrict the Like and Dislike functions to logged in users only.'
+            ],
+            'guest_comments' => [
+                'label' => 'Guest Comments',
+                'comment' => 'Allow guests to comment on all enabled posts.'
+            ],
+            'moderate_guest_comments' => [
+                'label' => 'Moderate Guest Comments',
+                'comment' => 'Moderate each guest comment, before it is published and visible to everyone.'
+            ],
+            'moderate_user_comments' => [
+                'label' => 'Moderate User Comments',
+                'comment' => 'Moderate each frontend user comment, before it is published and visible to everyone.'
+            ],
+            'form_comment_title' => [
+                'label' => 'Comment Title Field',
+                'comment' => 'Enable and Use the comment title field.',
+            ],
+            'form_comment_markdown' => [
+                'label' => 'Comment Markdown',
+                'comment' => 'Allow to use markdown in the comment body field.',
+            ],
+            'form_comment_honeypot' => [
+                'label' => 'Comment Honeypot',
+                'comment' => 'Add a Honeypot field to protect your comments from the simplest bots.',
+            ],
+            'form_comment_captcha' => [
+                'label' => 'Comment Captcha',
+                'comment' => 'Add a GREGWAR Captcha field to protect your comments from some bots.',
+            ],
+            'form_tos_checkbox' => [
+                'label' => 'Require Terms of Service',
+                'comment' => 'Shows a Terms of Service agreement checkbox below the comment form.',
+            ],
+            'form_tos_hide_on_user' => [
+                'label' => 'Hide for known Users',
+                'comment' => 'Hides the Terms of Service checkbox for loggedin users and backend users.',
+            ],
+            'form_tos_type' => [
+                'label' => 'Terms of Service Type',
+                'cms_page' => 'CMS Page',
+                'static_page' => 'Static Page'
+            ],
+            'form_tos_label' => [
+                'label' => 'Terms of Service Label',
+                'default' => 'I\'ve read and agree to the [Terms of Service]',
+                'comment' => 'The text within the square brackets will link to the specified page.'
+            ],
+            'form_tos_page' => [
+                'cmsLabel' => 'Terms of Service - CMS Page',
+                'staticLabel' => 'Terms of Service - Static Page',
+                'emptyOption' => '-- Select a Terms of Service Page --',
+                'comment' => 'Select the desired page to link to, or leave empty to show the plain label only.'
+            ]
         ],
     ],
+    'widgets' => [
+        'comments_list' => [
+            'label' => 'BlogPortal - Comments List'
+        ],
+        'posts_list' => [
+            'label' => 'BlogPortal - Posts List'
+        ],
+        'posts_statistics' => [
+            'label' => 'BlogPortal - Posts Statistics'
+        ]
+
+    ],
+
+    'report' => [
+        'comments' => [
+            'spam_confirm' => 'Are you sure you want to Mark as Spam this comment?',
+            'reject_confirm' => 'Are you sure you want to reject this comment?',
+            'approve_confirm' => 'Are you sure you want to approve this comment?'
+        ]
+
+    ]
 ];
