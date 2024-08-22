@@ -18,6 +18,7 @@ use SpAnjaan\BlogPortal\Models\Comment;
 use SpAnjaan\BlogPortal\Models\Visitor;
 use System\Classes\PluginBase;
 use Winter\Translate\FormWidgets\MLRichEditor;
+use SpAnjaan\BlogPortal\Models\BlogPortalSettings;
 
 class Plugin extends PluginBase
 {
@@ -50,7 +51,21 @@ class Plugin extends PluginBase
             'homepage'    => 'https://github.com/spanjaan/blogportal'
         ];
     }
-
+    
+    /**
+     * Get BlogPortal Settings
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    protected function config(string $key)
+    {
+        if (empty($this->blogportalSettings)) {
+            $this->blogportalSettings = BlogPortalSettings::instance();
+        }
+        return $this->blogportalSettings->{$key} ?? BlogPortalSettings::defaultValue($key);
+    }
     /**
      * Register method, called when the plugin is first registered.
      *
@@ -126,25 +141,28 @@ class Plugin extends PluginBase
 
     private function extendRichEditor()
     {
-        // Extend Richeditor in blog content Field.
-        Event::listen(self::FORM_EVENT, function ($widget) {
-            // Check if the controller is an instance of \Winter\Blog\Controllers\Posts
-            // and the model is an instance of \Winter\Blog\Models\Post
-            if (!($widget->getController() instanceof \Winter\Blog\Controllers\Posts
-                && $widget->model instanceof \Winter\Blog\Models\Post)) {
-                return;
-            }
-
-            // Continue with the rest of the code for extending fields
-            $field = $widget->getField('content');
-            if (class_exists('Winter\Translate\FormWidgets\MLRichEditor')) {
-                $field->config['widget'] = 'Winter\Translate\FormWidgets\MLRichEditor';
-            } else {
-                $field->config['widget'] = 'Backend\FormWidgets\RichEditor';
-            }
-        });
+        // Check if the 'richeditor_setting' configuration is set to true
+        if ($this->config('richeditor_setting') === '1') {
+            // Extend Richeditor in blog content field.
+            Event::listen(self::FORM_EVENT, function ($widget) {
+                // Check if the controller is an instance of \Winter\Blog\Controllers\Posts
+                // and the model is an instance of \Winter\Blog\Models\Post
+                if (!($widget->getController() instanceof \Winter\Blog\Controllers\Posts
+                    && $widget->model instanceof \Winter\Blog\Models\Post)) {
+                    return;
+                }
+    
+                // Continue with the rest of the code for extending fields
+                $field = $widget->getField('content');
+                if (class_exists('Winter\Translate\FormWidgets\MLRichEditor')) {
+                    $field->config['widget'] = 'Winter\Translate\FormWidgets\MLRichEditor';
+                } else {
+                    $field->config['widget'] = 'Backend\FormWidgets\RichEditor';
+                }
+            });
+        }
     }
-
+    
     private function collectUniqueViews()
     {
         // Collect (Unique) Views

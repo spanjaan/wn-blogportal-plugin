@@ -5,6 +5,18 @@ tabs:
             type: section
             label: spanjaan.blogportal::lang.settings.comments.general_section
 
+        _blog_section:
+            tab: Blog
+            type: section
+            label: spanjaan.blogportal::lang.settings.comments.general_section
+
+        richeditor_setting:
+            tab: Blog
+            type: switch
+            label: Enable Richeditor
+            comment: Enable richeditor in blog post section
+            default: false
+
         author_favorites:
             tab: spanjaan.blogportal::lang.settings.comments.tab
             type: switch
