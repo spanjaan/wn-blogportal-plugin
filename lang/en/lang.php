@@ -324,6 +324,13 @@ return [
             'label' => 'BlogPortal',
             'description' => 'Manage the BlogPortal related settings.'
         ],
+        
+        'blog_setting' => [
+            'tab' => 'Blog',
+            'label' => 'Richeditor Settings',
+            'rich_editor' => 'Rich Editor',
+            'rich_editor_comment' => 'Enable Richeditor in Blog post section'
+        ],
 
         'comments' => [
             'tab' => 'Comments',
