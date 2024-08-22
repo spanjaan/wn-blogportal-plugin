@@ -278,6 +278,15 @@ return [
         ],
         'visitors' => [
             'views' => 'Views / Unique'
+        ],
+        'sharecounts' => [
+            'label' => 'Share Counts',
+            'post_title' => 'Post Title',
+            'facebook_shares' => 'FB Shares',
+            'twitter_shares' => 'TW Shares',
+            'whatsapp_shares' => 'WA Shares',
+            'linkedin_shares' => 'LI Shares',
+
         ]
     ],
 
@@ -286,10 +295,11 @@ return [
         'access_comments_comment' => 'Allows access to the comments submenu for all posts.',
         'manage_post_settings' => 'Manage post-related comment settings',
         'moderate_comments' => 'Moderate blog comments',
-        'delete_commpents' => 'Allowed to delete published comments',
+        'delete_comments' => 'Allowed to delete published comments',
         'access_tags' => 'Manage the blog tags',
         'access_tags_comment' => 'Allows to access the tags submenu and to set the post tags itself for all posts.',
         'promote_tags' => 'Allows to promote tags',
+        'sharecounts' => 'Manage the share counts.',
     ],
 
     'sorting' => [

@@ -21,7 +21,7 @@ use Winter\Translate\FormWidgets\MLRichEditor;
 
 class Plugin extends PluginBase
 {
-        /**
+    /**
      * Required Extensions
      *
      * @var array
@@ -100,13 +100,24 @@ class Plugin extends PluginBase
 
                 'spanjaan_blogportal_comments' => [
                     'label'         => 'spanjaan.blogportal::lang.model.comments.label',
-                    'icon'          => 'icon-comment',
+                    'icon'          => 'icon-message',
                     'code'          => 'spanjaan-blogportal-comments',
                     'owner'         => 'SpAnjaan.BlogPortal',
                     'url'           => Backend::url('spanjaan/blogportal/comments'),
                     'counter'       => Comment::where('status', 'pending')->count(),
                     'permissions'   => [
                         'spanjaan.blogportal.comments'
+                    ]
+                ],
+
+                'spanjaan_blogportal_sharecounts' => [
+                    'label'         => 'spanjaan.blogportal::lang.model.sharecounts.label',
+                    'icon'          => 'icon-share-nodes',
+                    'code'          => 'spanjaan-blogportal-sharecounts',
+                    'owner'         => 'SpAnjaan.BlogPortal',
+                    'url'           => Backend::url('spanjaan/blogportal/sharecounts'),
+                    'permissions'   => [
+                        'spanjaan.blogportal.sharecounts'
                     ]
                 ]
             ]);
@@ -352,6 +363,10 @@ class Plugin extends PluginBase
             'spanjaan.blogportal.tags.promoted' => [
                 'tab'       => 'winter.blog::lang.blog.tab',
                 'label'     => 'spanjaan.blogportal::lang.permissions.promote_tags'
+            ],
+            'spanjaan.blogportal.sharecounts' => [
+                'tab'       => 'winter.blog::lang.blog.tab',
+                'label'     => 'spanjaan.blogportal::lang.permissions.sharecounts'
             ]
         ];
     }

@@ -51,3 +51,10 @@ columns:
         label: winter.blog::lang.post.created
         sortable: true
         invisible: true
+    
+    updated_at:
+        label: 'winter.blog::lang.post.updated'
+        type: datetime
+        searchable: true
+        sortable: true
+        invisible: true

@@ -12,7 +12,7 @@ filter: $/spanjaan/blogportal/models/sharecount/scopes.yaml
 modelClass: SpAnjaan\BlogPortal\Models\Sharecount
 
 # List Title
-title: 'spanjaan.blogportal::lang.models.sharecount.label_plural'
+title: 'spanjaan.blogportal::lang.model.sharecounts.label'
 
 # Message to display if the list is empty
 noRecordsMessage: backend::lang.list.no_records
