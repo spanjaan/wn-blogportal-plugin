@@ -2,7 +2,7 @@
     "name": "spanjaan/wn-blogportal-plugin",
     "type": "winter-plugin",
     "version": "1.0.6",
-    "description": "Extends Winter's Blog plugin with tag, archives and comments and post share.",
+    "description": "Extends Winter's Blog plugin with tag, archives, comments, and post share.",
     "keywords": [
         "winter", 
         "blogportal",
@@ -13,15 +13,20 @@
     "license": "MIT",
     "authors": [
         {
+            "name": "Sam",
+            "email": "sam@rat.md",
+            "role": "Original Author"
+        },
+        {
             "name": "S.p. Anjaan",
             "email": "spanjaan@gmail.com",
-            "role": "Developer"
+            "role": "Author"
         }
     ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": ">= 7.4 || >= 8.0",
+        "php": ">=7.4",
         "composer/installers": "~1.0",
         "gregwar/captcha": "^1.2"
     },
@@ -31,5 +36,8 @@
         "allow-plugins": {
             "composer/installers": true
         }
+    },
+    "replace": {
+        "ratmd/bloghub-plugin": "~1.3.0"
     }
 }
