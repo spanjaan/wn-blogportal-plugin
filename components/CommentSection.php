@@ -360,6 +360,7 @@ class CommentSection extends ComponentBase
             }
 
             $this->page['comments'] = $this->getComments();
+            $this->page['commentsCount'] = $this->getCommentsCount();
 
             $this->addJs('/plugins/spanjaan/blogportal/assets/js/comments.js');
             $this->addCss('/plugins/spanjaan/blogportal/assets/css/comments.css');
@@ -555,6 +556,22 @@ class CommentSection extends ComponentBase
 
         // Return Comment
         return $comment;
+    }
+
+    /**
+     * Retrieve the total number of comments for the post.
+     *
+     * @return int The total number of comments.
+     */
+    protected function getCommentsCount(): int
+    {
+        // Logic to retrieve the total number of comments for the post
+        if (!empty($this->post)) {
+            // Counting the comments related to the post using the Comment model
+            return Comment::where('post_id', $this->post->id)->count();
+        }
+        // If no post is available, return 0 comments
+        return 0;
     }
 
     /**
@@ -839,6 +856,7 @@ class CommentSection extends ComponentBase
                 $this->page['captchaImage'] = $builder->inline();
             }
             $this->page['comments'] = $this->getComments();
+            $this->page['commentsCount'] = $this->getCommentsCount();
 
             return [
                 'status' => 'success',

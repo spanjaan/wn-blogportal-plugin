@@ -16,7 +16,7 @@
         {% endif %}
     </div>
     {% else %}
-    {{ form_open({ 'data-blogportal-handler': 'onComment' }) }}
+    {{ form_open({ 'data-blogportal-handler': 'onComment', 'autocomplete': 'off' }) }}
     <div class="row g-3">
         {% if not isLoggedIn %}
         {% if showCommentFormHoneypot %}
