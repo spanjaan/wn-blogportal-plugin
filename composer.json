@@ -23,6 +23,10 @@
             "role": "Author"
         }
     ],
+    "support": {
+        "issues": "https://github.com/spanjaan/wn-blogportal-plugin/issues",
+        "source": "https://github.com/spanjaan/wn-blogportal-plugin"
+    },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
