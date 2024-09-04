@@ -342,9 +342,9 @@ class Plugin extends PluginBase
             \SpAnjaan\BlogPortal\Components\CommentList::class         => 'blogportalCommentList',
             \SpAnjaan\BlogPortal\Components\CommentSection::class      => 'blogportalCommentSection',
             \SpAnjaan\BlogPortal\Components\Tags::class                => 'blogportalTags',
-            \SpAnjaan\BlogPortal\Components\PopularPosts::class        => 'popularPosts',
-            \SpAnjaan\BlogPortal\Components\ArchiveLinks::class        => 'archiveLinks',
-            \SpAnjaan\BlogPortal\Components\ShareButtons::class        => 'shareButtons',
+            \SpAnjaan\BlogPortal\Components\PopularPosts::class        => 'blogportalPopularPosts',
+            \SpAnjaan\BlogPortal\Components\ArchiveLinks::class        => 'blogportalArchiveLinks',
+            \SpAnjaan\BlogPortal\Components\ShareButtons::class        => 'blogportalShareButtons',
         ];
     }
 
