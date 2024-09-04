@@ -18,4 +18,6 @@
 1.0.6:
     - 'Create Shares Table'
     - v1.0.6/create_sharecounts_table.php
+1.0.7:
+    - 'Miner typo fixed'
 
