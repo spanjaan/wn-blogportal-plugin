@@ -1,24 +1,25 @@
-<div class="border rounded-3 py-4 px-2 bg-light shadow-sm">
+<div class="rounded py-4 px-2 bg-faded-primary">
     <div class="text-center">
-        <h2 class="heading mb-4" style="font-weight: bold; font-size: 1.75rem; color: #333;">
-            Share this post to your favorite social media
+        <h2 class="heading mb-4">
+            Share this post
         </h2>
         <div class="share-buttons d-flex justify-content-center flex-wrap gap-3">
-            <button class="btn btn-facebook text-white" type="button" data-platform="facebook" style="background-color: #3b5998;">
-                <i class="fab fa-facebook-f"></i> Facebook
+            <button class="btn btn-facebook btn-secondary shadow-sm rounded-pill" type="button" data-platform="facebook">
+                <i class="bx bxl-facebook me-2"></i> Facebook
             </button>
-            <button class="btn btn-twitter text-white" type="button" data-platform="twitter" style="background-color: #55acee;">
-                <i class="fab fa-twitter"></i> Twitter
+            <button class="btn btn-twitter btn-secondary shadow-sm rounded-pill" type="button" data-platform="twitter">
+                <i class="bx bxl-twitter me-2"></i> Twitter
             </button>
-            <button class="btn btn-linkedin text-white" type="button" data-platform="linkedin" style="background-color: #0077b5;">
-                <i class="fab fa-linkedin-in"></i> LinkedIn
+            <button class="btn btn-linkedin btn-secondary shadow-sm rounded-pill" type="button" data-platform="linkedin">
+                <i class="bx bxl-linkedin me-2"></i> LinkedIn
             </button>
-            <button class="btn btn-whatsapp text-white" type="button" data-platform="whatsapp" style="background-color: #25D366;">
-                <i class="fab fa-whatsapp"></i> WhatsApp
+            <button class="btn btn-whatsapp btn-secondary shadow-sm rounded-pill" type="button" data-platform="whatsapp">
+                <i class="bx bxl-whatsapp me-2"></i> WhatsApp
             </button>
         </div>
-        <div class="total-shares mt-3" style="font-size: 1.25rem; color: #555;">
-            Total Shares: <span id="total-share-count">{{ shareCounts.total ?? 0 }}</span>
+        <div class="total-shares mt-3 text-primary">
+            <span id="total-share-count">{{ shareCounts.total ?? 0 }}</span>
+            Shares
         </div>
     </div>
 </div>
