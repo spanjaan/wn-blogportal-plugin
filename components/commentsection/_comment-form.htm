@@ -35,7 +35,7 @@
             <label for="{{ username_id }}"
                 class="form-label">{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}</label>
             <input id="{{ username_id }}" type="text" name="{{ username_name }}" value=""
-                placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}" class="form-control"
+                placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}" class="form-control form-control-lg"
                 pattern="[A-Za-z ]+" minlength="3" maxlength="12" required />
         </div>
 
@@ -43,7 +43,7 @@
             <label for="{{ email_id }}"
                 class="form-label">{{ 'spanjaan.blogportal::lang.frontend.comments.email' | trans }}</label>
             <input id="{{ email_id }}" type="email" name="{{ email_name }}" value=""
-                placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.email' | trans }}" class="form-control"
+                placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.email' | trans }}" class="form-control form-control-lg"
                 required />
         </div>
         {% else %}
@@ -52,7 +52,7 @@
                 class="form-label">{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}</label>
             <input id="{{ __SELF__.id }}_user" type="text" name="comment_name"
                 value="{{ currentUser.blogportal_display | default(currentUser.username) }}"
-                placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}" class="form-control"
+                placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}" class="form-control form-control-lg"
                 readonly />
         </div>
         {% endif %}
@@ -61,7 +61,7 @@
         <div class="col-12">
             <label for="{{ __SELF__.id }}_title"
                 class="form-label">{{ 'spanjaan.blogportal::lang.frontend.comments.title' | trans }}</label>
-            <input id="{{ __SELF__.id }}_title" name="comment_title" class="form-control"
+            <input id="{{ __SELF__.id }}_title" name="comment_title" class="form-control form-control-lg"
                 placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.title' | trans }}" />
         </div>
         {% endif %}
@@ -69,7 +69,7 @@
         <div class="col-12">
             <label for="{{ __SELF__.id }}_comment"
                 class="form-label">{{ 'spanjaan.blogportal::lang.frontend.comments.comment' | trans }}</label>
-            <textarea id="{{ __SELF__.id }}_comment" name="comment_comment" class="form-control"
+            <textarea id="{{ __SELF__.id }}_comment" name="comment_comment" class="form-control form-control-lg"
                 placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.comment' | trans }}" rows="5"
                 required></textarea>
             {% if allowCommentFormMarkdown %}
@@ -98,10 +98,10 @@
                 </div>
                 <div class="flex-grow-1">
                     <div class="input-group">
-                        <input id="{{ __SELF__.id }}_captcha" name="comment_captcha" class="form-control"
+                        <input id="{{ __SELF__.id }}_captcha" name="comment_captcha" class="form-control form-control-lg"
                             placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.captcha_placeholder' | trans }}"
                             autocomplete="off" required />
-                        <button type="button" class="btn btn-sm btn-primary" data-blogportal-handler="onReloadCaptcha"
+                        <button type="button" class="btn btn-lg btn-primary" data-blogportal-handler="onReloadCaptcha"
                             data-blogportal-id="{{ __SELF__.id }}">
                             {{ 'spanjaan.blogportal::lang.frontend.comments.captcha_reload' | trans }}
                         </button>
@@ -116,12 +116,12 @@
             <label for="{{ __SELF__.id }}_username" class="form-label"></label>
             <input id="{{ __SELF__.id }}_username" type="text" name="comment_user" autocomplete="off" value=""
                 placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.username' | trans }}"
-                class="form-control special-assignment" />
+                class="form-control form-control-lg special-assignment" />
 
             <label for="{{ __SELF__.id }}_email" class="form-label"></label>
             <input id="{{ __SELF__.id }}_email" type="email" name="comment_email" autocomplete="off" value=""
                 placeholder="{{ 'spanjaan.blogportal::lang.frontend.comments.email' | trans }}"
-                class="form-control special-assignment" />
+                class="form-control form-control-lg special-assignment" />
         </div>
         {% endif %}
 
@@ -133,10 +133,10 @@
             <input type="hidden" name="comment_validation" value="{{ validationHash }}" />
             <input type="hidden" name="comment_form_id" value="{{ __SELF__.id }}" />
 
-            <button id="{{ __SELF__.id }}_cancel" type="button" class="btn btn-warning hidden me-md-2"
+            <button id="{{ __SELF__.id }}_cancel" type="button" class="btn btn-lg btn-warning hidden me-md-2"
                 data-blogportal-handler="onCancelReply"
                 >{{ 'spanjaan.blogportal::lang.frontend.comments.cancel_reply' | trans }}</button>
-            <button id="{{ __SELF__.id }}_submit" type="submit" class="btn mt-2 mt-md-0 btn-primary"
+            <button id="{{ __SELF__.id }}_submit" type="submit" class="btn btn-lg mt-2 mt-md-0 btn-primary"
                 data-blogportal-handler="onComment">{{ 'spanjaan.blogportal::lang.frontend.comments.submit_comment' | trans }}</button>
         </div>
     </div>
