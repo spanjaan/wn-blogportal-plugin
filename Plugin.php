@@ -33,7 +33,6 @@ class Plugin extends PluginBase
     
     // Define constants for event names
     private const MENU_EVENT = 'backend.menu.extendItems';
-    private const FORM_EVENT = 'backend.form.extendFields';
     private const PAGE_EVENT = 'cms.page.end';
 
     /**
@@ -90,7 +89,6 @@ class Plugin extends PluginBase
     public function boot()
     {
         $this->extendBackendMenu();
-        $this->extendRichEditor();
         $this->collectUniqueViews();
         $this->implementCustomModels();
 
@@ -139,30 +137,6 @@ class Plugin extends PluginBase
         });
     }
 
-    private function extendRichEditor()
-    {
-        // Check if the 'richeditor_setting' configuration is set to true
-        if ($this->config('richeditor_setting') === '1') {
-            // Extend Richeditor in blog content field.
-            Event::listen(self::FORM_EVENT, function ($widget) {
-                // Check if the controller is an instance of \Winter\Blog\Controllers\Posts
-                // and the model is an instance of \Winter\Blog\Models\Post
-                if (!($widget->getController() instanceof \Winter\Blog\Controllers\Posts
-                    && $widget->model instanceof \Winter\Blog\Models\Post)) {
-                    return;
-                }
-    
-                // Continue with the rest of the code for extending fields
-                $field = $widget->getField('content');
-                if (class_exists('Winter\Translate\FormWidgets\MLRichEditor')) {
-                    $field->config['widget'] = 'Winter\Translate\FormWidgets\MLRichEditor';
-                } else {
-                    $field->config['widget'] = 'Backend\FormWidgets\RichEditor';
-                }
-            });
-        }
-    }
-    
     private function collectUniqueViews()
     {
         // Collect (Unique) Views
