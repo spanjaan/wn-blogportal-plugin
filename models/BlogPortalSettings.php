@@ -23,7 +23,6 @@ class BlogPortalSettings extends Model
     public static function defaultValue($key)
     {
         return [
-            "richeditor_setting" => '0',
             "author_favorites" => '1',
             "like_comment" => '1',
             "dislike_comment" => '1',
