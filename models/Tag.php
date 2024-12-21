@@ -95,26 +95,6 @@ class Tag extends Model
     ];
 
     /**
-     * Hook - Before Model is created
-     *
-     * @return void
-     */
-    public function beforeCreate()
-    {
-        $this->title = empty($this->title) ? $this->slug : $this->title;
-        $this->slug = Str::slug($this->slug . '-tag');
-    }
-
-    /**
-     * Hook - Before Model is updated
-     *
-     * @return void
-     */
-    public function beforeUpdate()
-    {
-        $this->slug = Str::slug($this->slug . '-tag');
-    }
-    /**
      * Hook - Before Model is saved
      *
      * @return void
