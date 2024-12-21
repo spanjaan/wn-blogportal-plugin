@@ -5,9 +5,9 @@ use SpAnjaan\BlogPortal\Models\Sharecount;
 use Winter\Blog\Models\Post;
 
 class ShareButtons extends ComponentBase
-{
+{   
     /**
-     * Define component details
+     * The shareCounts method returns the share counts for the post.
      * 
      * @return array
      */
@@ -15,12 +15,12 @@ class ShareButtons extends ComponentBase
     {
         return [
             'name'        => 'Share Buttons',
-            'description' => 'Displays social media share buttons and tracks share counts.'
+            'description' => 'Displays social media share buttons and tracks share counts.',
         ];
     }
 
     /**
-     * Define component properties
+     * The properties method returns the properties that the component allows.
      * 
      * @return array
      */
@@ -37,56 +37,60 @@ class ShareButtons extends ComponentBase
     }
 
     /**
-     * Get the share counts for the specified post
+     * The onRun method adds the required JS file to the page.
+     * 
+     * @return void
+     */
+    public function onRun()
+    {
+        $this->addJs('/plugins/spanjaan/blogportal/assets/js/share-button.js');
+    }
+
+    /**
+     * The shareCounts method returns the share counts for the post.
      * 
      * @return array
      */
     public function shareCounts()
     {
         $postId = (int) $this->property('postId');
+        $post = Post::find($postId);
 
-        // If no post ID is provided, get the first post's ID
-        if (!$postId && $post = Post::first()) {
-            $postId = $post->id;
-        }
-
-        // If no post ID is found, return default values
-        if (!$postId) {
+        if (!$post) {
             return [
                 'facebook' => 0,
-                'twitter' => 0,
+                'twitter'  => 0,
                 'linkedin' => 0,
                 'whatsapp' => 0,
-                'total' => 0,
+                'total'    => 0,
             ];
         }
 
-        // Get or create the Sharecount record for the post
-        $sharecount = Sharecount::firstOrCreate(['post_id' => $postId]);
+        $sharecount = Sharecount::firstOrCreate(['post_id' => $post->id]);
         $totalShares = $this->getTotalShareCount($sharecount);
 
         return [
             'facebook' => $sharecount->facebook,
-            'twitter' => $sharecount->twitter,
+            'twitter'  => $sharecount->twitter,
             'linkedin' => $sharecount->linkedin,
             'whatsapp' => $sharecount->whatsapp,
-            'total' => $totalShares,
+            'total'    => $totalShares,
         ];
     }
 
     /**
-     * Calculate the total share count
+     * The getTotalShareCount method returns the total share count for the post.
      * 
-     * @param Sharecount $sharecount
+     * @param  Sharecount $sharecount
      * @return int
      */
     public function getTotalShareCount($sharecount)
     {
-        return $sharecount->facebook + $sharecount->twitter + $sharecount->linkedin + $sharecount->whatsapp;
+        return (int) $sharecount->facebook + (int) $sharecount->twitter + (int) $sharecount->linkedin + (int) $sharecount->whatsapp;
     }
 
     /**
-     * Handle the share action and update the share count
+     * The onShare method increments the share count for the specified platform.
      * 
      * @return array
      */
@@ -94,26 +98,25 @@ class ShareButtons extends ComponentBase
     {
         $platform = post('platform');
         $postId = post('postId');
-
-        // If no post ID is provided, get the first post's ID
-        if (!$postId || $postId == 0) {
-            $postId = Post::first()->id;
+    
+        if (!$platform || !$postId) {
+            throw new \ValidationException(['error' => 'Platform or Post ID is missing.']);
         }
-
-        // Get or create the Sharecount record for the post
+    
         $shareCount = Sharecount::firstOrCreate(['post_id' => $postId]);
         $shareCount->incrementShareCount($platform);
-
-        // Calculate the updated total share count
+    
         $totalShares = $this->getTotalShareCount($shareCount);
-
+    
         return [
             'shareCounts' => array_merge($shareCount->toArray(), ['total' => $totalShares]),
         ];
     }
-
+    
     /**
-     * Prepare data for rendering
+     * The onRender method adds the shareCounts and postId variables to the page.
+     * 
+     * @return void
      */
     public function onRender()
     {

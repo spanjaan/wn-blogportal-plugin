@@ -1,3 +1,4 @@
+<input type="hidden" id="post-id" value="{{ postId }}">
 <div class="rounded py-4 px-2 bg-faded-primary">
     <div class="text-center">
         <h2 class="heading mb-4">
@@ -18,80 +19,7 @@
             </button>
         </div>
         <div class="total-shares mt-3 text-primary">
-            <span id="total-share-count">{{ shareCounts.total ?? 0 }}</span>
-            Shares
+            <span id="total-share-count">{{ shareCounts.total ?? 0 }}</span> Shares
         </div>
     </div>
 </div>
-
-<script>
-document.querySelectorAll('.share-buttons button').forEach(function(button) {
-    button.removeEventListener('click', onShareClick);
-    button.addEventListener('click', onShareClick);
-});
-
-function onShareClick(event) {
-    event.preventDefault();
-
-    var button = event.currentTarget;
-    button.disabled = true; // Disable the button to prevent multiple clicks
-
-    var platform = button.getAttribute('data-platform');
-    var shareUrl = window.location.href;
-    var postId = '{{ post.id }}'; // Ensure this variable is correctly rendered in the template
-
-    console.log(`Preparing to share on ${platform}...`);
-    console.log(`Post ID: ${postId}`);
-
-    // Use Snowboard to make the AJAX request
-    Snowboard.request(null, 'onShare', {
-        data: {
-            platform: platform,
-            postId: postId
-        },
-        success: function(response) {
-            console.log('Share count updated:', response.shareCounts);
-
-            // Update the total share count on the page
-            if (response.shareCounts && response.shareCounts.total !== undefined) {
-                document.getElementById('total-share-count').textContent = response.shareCounts.total;
-            }
-
-            // Open the share window only after the share count has been updated
-            openShareWindow(platform, shareUrl);
-
-            // Re-enable the button after a successful request
-            button.disabled = false;
-        },
-        error: function() {
-            console.error('An error occurred while processing the share request.');
-
-            // Re-enable the button even if there's an error
-            button.disabled = false;
-        }
-    });
-}
-
-function openShareWindow(platform, url) {
-    var shareUrl;
-    switch (platform) {
-        case 'facebook':
-            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-            break;
-        case 'twitter':
-            shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(document.title)}`;
-            break;
-        case 'linkedin':
-            shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
-            break;
-        case 'whatsapp':
-            shareUrl = `https://wa.me/?text=${encodeURIComponent(url)}`;
-            break;
-        default:
-            console.error('Unknown platform: ' + platform);
-            return;
-    }
-    console.log('Opening share window with URL:', shareUrl);
-    window.open(shareUrl, 'shareWindow', 'width=600,height=400');
-}
-</script>
