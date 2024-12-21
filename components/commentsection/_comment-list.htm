@@ -13,7 +13,7 @@
                 {% partial '@_single' comment=comment %}
             </div>
             {% else %}
-            <div id="comment-{{ comment.id }}" class="card bg-secondary mb-2">
+            <div id="comment-{{ comment.id }}" class="bg-secondary mb-2 rounded">
                 {% partial '@_single' comment=comment %}
                 {% if context.showCommentsHierarchical and comment.children %}
                 <div class="position-relative ps-2">

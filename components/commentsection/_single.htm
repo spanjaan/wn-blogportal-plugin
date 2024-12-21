@@ -12,7 +12,7 @@
 <div class="p-2" data-comment-id="{{ comment.id }}">
     <div class="d-flex pb-2 mb-1">
         <div class="d-flex align-items-center me-3">
-            <img src="{{ comment.avatar }}" class="rounded-1" width="48" alt="{{ comment.display_name }}">
+            <img src="{{ comment.avatar }}" class="rounded" width="48" alt="{{ comment.display_name }}">
             <div class="ps-3">
                 <h6 class="fw-semibold mb-0">{{ comment.display_name }}</h6>
                 {% if comment.status == 'approved' %}
