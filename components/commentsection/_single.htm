@@ -1,115 +1,229 @@
-{% macro renderParent(parent, depth = 1) %}
-    <div class="border rounded p-3 {% if depth == 1 %}mb-3{% else %}mt-3{% endif %}">
-        <small>{{ 'spanjaan.blogportal::lang.frontend.comments.replyto'|trans({ 'name': parent.display_name }) }}</small>
-        <p class="m-0 p-0"><small>{{ parent.content | raw }}</small></p>
+{% set isReply = comment.parent is not empty %}
 
-        {% if parent.parent %}
-            {{ templates.renderParent(parent.parent, depth + 1) }}
-        {% endif %}
-    </div>
-{% endmacro %}
+<div class="flex gap-2.5 group {{ isReply ? 'pl-12 pt-1.5' : 'pt-3 border-t border-slate-200 dark:border-slate-700' }}"
+     data-comment-id="{{ comment.id }}">
 
-<div class="p-2" data-comment-id="{{ comment.id }}">
-    <div class="d-flex pb-2 mb-1">
-        <div class="d-flex align-items-center me-3">
-            <img src="{{ comment.avatar }}" class="rounded" width="48" alt="{{ comment.display_name }}">
-            <div class="ps-3">
-                <h6 class="fw-semibold mb-0">{{ comment.display_name }}</h6>
-                {% if comment.status == 'approved' %}
-                    <span class="fs-sm text-muted" datetime="{{ comment.published_at }}">{{ comment.published_ago }}</span>
-                {% elseif comment.status == 'pending' %}
-                    <span class="fs-sm text-danger">{{ 'spanjaan.blogportal::lang.frontend.comments.awaiting_moderation'|trans }}</span>
-                {% endif %}
-            </div>
+    {# ── Avatar ── #}
+    <div class="flex-shrink-0">
+        <div class="{{ isReply ? 'w-7 h-7' : 'w-9 h-9' }} rounded-full
+                    ring-1 ring-purple-600/30 dark:ring-purple-400/30
+                    shadow-md dark:shadow-slate-900/60
+                    flex-shrink-0">
+            <img src="{{ comment.avatar }}" alt="{{ comment.display_name }}"
+                class="w-full h-full rounded-full object-cover p-0.5">
         </div>
     </div>
 
-    <div class="mt-2">
-        {% if not showCommentsHierarchical and comment.parent %}
-            {{ _self.renderParent(comment.parent) }}
-        {% endif %}
+    {# ── Content ── #}
+    <div class="flex-1 min-w-0">
 
-        <!-- Print the parent user's name if there is a parent comment -->
-        {% if comment.parent %}
-            <p class="m-0 p-0 text-primary"><small>{{ 'Replied to: ' ~ comment.parent.display_name }}</small></p>
-        {% endif %}
-
-        {{ comment.comment_content | raw }}
-    </div>
-
-    {% if not skip_footer|default(false) %}
-        <footer>
+        {# Bubble #}
+        <div class="relative rounded-2xl px-3.5 py-2.5
             {% if comment.status == 'pending' %}
-                {% if currentUserCanModerate %}
-                <div class="text-md-start text-center">
-                    <button data-blogportal-handler="onChangeStatus" data-blogportal-status="approve"
-                        data-blogportal-id="{{ comment.id }}"
-                        title="{{ 'spanjaan.blogportal::lang.frontend.comments.approve_title'|trans }}"
-                        class="btn btn-sm btn-success">
-                        <i class='bx bx-check'></i>
-                        {{ 'spanjaan.blogportal::lang.frontend.comments.approve'|trans }}
-                    </button>
-                    <button data-blogportal-handler="onChangeStatus" data-blogportal-status="reject"
-                        data-blogportal-id="{{ comment.id }}"
-                        title="{{ 'spanjaan.blogportal::lang.frontend.comments.reject_title'|trans }}"
-                        class="btn btn-sm btn-danger">
-                        <i class='bx bx-x fs-lg'></i>
-                        {{ 'spanjaan.blogportal::lang.frontend.comments.reject'|trans }}
-                    </button>
-                </div>
+                bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/40
+            {% else %}
+                bg-gray-100 dark:bg-gray-700
+            {% endif %}">
+
+            {# Name + status badge + mod buttons #}
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+                <strong class="text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-none">
+                    {{ comment.display_name }}
+                </strong>
+
+                {% if comment.status == 'pending' %}
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold
+                                 text-amber-600 dark:text-amber-400
+                                 bg-amber-100 dark:bg-amber-900/50
+                                 border border-amber-200 dark:border-amber-700/50
+                                 px-2 py-0.5 rounded-full uppercase tracking-widest">
+                        <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        {{ 'spanjaan.blogportal::lang.frontend.comments.awaiting_moderation'|trans }}
+                    </span>
+
+                    {% if currentUserCanModerate %}
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <button data-blogportal-handler="onChangeStatus"
+                                data-blogportal-status="approve"
+                                data-blogportal-id="{{ comment.id }}"
+                                class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold
+                                       rounded-full border transition-all duration-150
+                                       text-emerald-700 dark:text-emerald-400
+                                       bg-emerald-50 dark:bg-emerald-950/40
+                                       border-emerald-200 dark:border-emerald-800
+                                       hover:bg-emerald-500 hover:text-white hover:border-emerald-500">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            {{ 'spanjaan.blogportal::lang.frontend.comments.approve'|trans }}
+                        </button>
+                        <button data-blogportal-handler="onChangeStatus"
+                                data-blogportal-status="reject"
+                                data-blogportal-id="{{ comment.id }}"
+                                class="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-semibold
+                                       rounded-full border transition-all duration-150
+                                       text-red-700 dark:text-red-400
+                                       bg-red-50 dark:bg-red-950/40
+                                       border-red-200 dark:border-red-800
+                                       hover:bg-red-500 hover:text-white hover:border-red-500">
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            {{ 'spanjaan.blogportal::lang.frontend.comments.reject'|trans }}
+                        </button>
+                    </div>
+                    {% endif %}
                 {% endif %}
-                {% else %}
-                <div class="d-flex align-items-center flex-column flex-md-row">
-                    <div class="align-items-center border pt-3 px-3 rounded">
-                    {% if currentUserCanLike %}
-                        <button data-blogportal-handler="onVote" data-blogportal-vote="like"
-                            data-blogportal-id="{{ comment.id }}"
-                            title="{{ 'spanjaan.blogportal::lang.frontend.comments.like_title'|trans }}"
-                            class="btn btn-sm border-0 position-relative {% if comment.current_likes %}text-success disabled{% else %}text-muted{% endif %}">
-                            {% if comment.current_likes %}
-                                <i class='bx bx-like fs-lg'></i>
-                                <span class="badge badge-sm position-absolute top-0 start-100 translate-middle rounded-pill bg-success">{{ comment.likes }}</span>
-                            {% else %}
-                                <i class='bx bx-like fs-lg'></i>
-                                <span class="badge badge-sm position-absolute top-0 start-100 translate-middle rounded-pill bg-primary text-white">{{ comment.likes }}</span>
-                            {% endif %}
-                        </button>
-                    {% endif %}
-                    {% if currentUserCanDislike %}
-                        <button data-blogportal-handler="onVote" data-blogportal-vote="dislike"
-                            data-blogportal-id="{{ comment.id }}"
-                            title="{{ 'spanjaan.blogportal::lang.frontend.comments.dislike_title'|trans }}"
-                            class="btn border-0 btn-sm position-relative {% if comment.current_dislikes %}text-danger disabled{% else %}text-muted{% endif %}">
-                            {% if comment.current_dislikes %}
-                                <i class='bx bx-dislike fs-lg'></i>
-                                <span class="badge badge-sm position-absolute top-0 start-100 translate-middle rounded-pill bg-danger">{{ comment.dislikes }}</span>
-                            {% else %}
-                                <i class='bx bx-dislike fs-lg'></i>
-                                <span class="badge badge-sm position-absolute top-0 start-100 translate-middle rounded-pill bg-primary text-white">{{ comment.dislikes }}</span>
-                            {% endif %}
-                        </button>
-                    {% endif %}
-                    {% if currentUserCanFavorite %}
-                        <button data-blogportal-handler="onChangeStatus" data-blogportal-status="favorite"
-                            data-blogportal-id="{{ comment.id }}"
-                            title="{% if comment.favorite %}{{ 'spanjaan.blogportal::lang.frontend.comments.unfavorite_title'|trans }}{% else %}{{ 'spanjaan.blogportal::lang.frontend.comments.favorite_title'|trans }}{% endif %}"
-                            class="btn border-0 btn-sm position-relative {% if comment.favorite %}text-warning{% else %}text-primary{% endif %}">
-                            <i class='bx bx-star fs-lg'></i>
-                        </button>
-                    {% endif %}
-                    </div>
-                    <div class="mt-2 mt-md-0 ms-md-auto">
-                    {% if currentUserCanComment %}
-                        <button data-blogportal-handler="onCreateReply" data-blogportal-id="{{ comment.id }}"
-                            title="{{ 'spanjaan.blogportal::lang.frontend.comments.reply_title'|trans }}"
-                            class="btn btn-sm btn-outline-primary">
-                            <i class='bx bx-share fs-lg'></i>
-                            <span>{{ 'spanjaan.blogportal::lang.frontend.comments.reply'|trans }}</span>
-                        </button>
-                    {% endif %}
-                    </div>
-                </div>
+            </div>
+
+            {# Reply mention (replies only) #}
+            {% if isReply %}
+            <div class="mb-0.5">
+                <a href="#comment-{{ comment.parent.id }}"
+                   class="text-[13px] font-semibold text-purple-600 dark:text-purple-400 hover:underline no-underline">
+                    @{{ comment.parent.display_name }}
+                </a>
+            </div>
             {% endif %}
-        </footer>
-    {% endif %}
+
+            {# Body #}
+            <div class="text-[13px] text-slate-800 dark:text-slate-200 leading-[1.45]
+                        prose max-w-none dark:prose-dark lang-np:prose-devanagari">
+                {{ comment.comment_content | raw }}
+            </div>
+
+            {# Reaction badge (bubble corner) — matches action button style #}
+            {% if comment.likes > 0 or comment.dislikes > 0 %}
+            <div class="absolute -bottom-3 right-3 inline-flex items-center
+                        bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                        rounded-full shadow-sm overflow-hidden text-[12px]">
+
+                {% if comment.likes > 0 %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5
+                             text-purple-600 dark:text-purple-400
+                             {% if comment.dislikes > 0 %}border-r border-slate-200 dark:border-slate-700{% endif %}">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+                        <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                    </svg>
+                    <span class="tabular-nums font-semibold">{{ comment.likes }}</span>
+                </span>
+                {% endif %}
+
+                {% if comment.dislikes > 0 %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5
+                             text-red-500 dark:text-red-400">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/>
+                        <path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
+                    </svg>
+                    <span class="tabular-nums font-semibold">{{ comment.dislikes }}</span>
+                </span>
+                {% endif %}
+
+            </div>
+            {% endif %}
+        </div>
+
+        {# ── Action row ── #}
+        {% if comment.status != 'pending' %}
+        <div class="flex items-center gap-3 mt-3 px-1 flex-wrap">
+
+            {# Timestamp #}
+            {% if comment.status == 'approved' %}
+                <time class="text-[12px] text-slate-400 dark:text-slate-500 font-medium">
+                    {{ comment.published_ago }}
+                </time>
+            {% endif %}
+
+            {# Divider #}
+            <span class="w-px h-3 bg-slate-200 dark:bg-slate-700"></span>
+
+            {# Like — icon only #}
+            {% if currentUserCanLike %}
+            <button data-blogportal-handler="onVote"
+                    data-blogportal-vote="like"
+                    data-blogportal-id="{{ comment.id }}"
+                    {{ comment.current_likes ? 'disabled' : '' }}
+                    title="{{ 'spanjaan.blogportal::lang.frontend.comments.like'|trans }}"
+                    class="inline-flex items-center transition-colors duration-150
+                    {% if comment.current_likes %}
+                        text-purple-600 dark:text-purple-400 cursor-not-allowed
+                    {% else %}
+                        text-slate-400 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400
+                    {% endif %}">
+                <svg width="15" height="15" viewBox="0 0 24 24"
+                     fill="{{ comment.current_likes ? 'currentColor' : 'none' }}"
+                     stroke="currentColor" stroke-width="2">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+                    <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                </svg>
+            </button>
+            {% endif %}
+
+            {# Dislike — icon only #}
+            {% if currentUserCanDislike %}
+            <button data-blogportal-handler="onVote"
+                    data-blogportal-vote="dislike"
+                    data-blogportal-id="{{ comment.id }}"
+                    {{ comment.current_dislikes ? 'disabled' : '' }}
+                    title="{{ 'spanjaan.blogportal::lang.frontend.comments.dislike'|trans }}"
+                    class="inline-flex items-center transition-colors duration-150
+                    {% if comment.current_dislikes %}
+                        text-red-500 dark:text-red-400 cursor-not-allowed
+                    {% else %}
+                        text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400
+                    {% endif %}">
+                <svg width="15" height="15" viewBox="0 0 24 24"
+                     fill="{{ comment.current_dislikes ? 'currentColor' : 'none' }}"
+                     stroke="currentColor" stroke-width="2">
+                    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/>
+                    <path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
+                </svg>
+            </button>
+            {% endif %}
+
+            {# Favorite / Save — icon only #}
+            {% if currentUserCanFavorite %}
+            <button data-blogportal-handler="onChangeStatus"
+                    data-blogportal-status="favorite"
+                    data-blogportal-id="{{ comment.id }}"
+                    title="{{ comment.favorite ? 'Saved' : 'Save' }}"
+                    class="inline-flex items-center transition-colors duration-150
+                    {% if comment.favorite %}
+                        text-amber-500 dark:text-amber-400
+                    {% else %}
+                        text-slate-400 dark:text-slate-500 hover:text-amber-500 dark:hover:text-amber-400
+                    {% endif %}">
+                <svg width="15" height="15" viewBox="0 0 24 24"
+                     fill="{{ comment.favorite ? 'currentColor' : 'none' }}"
+                     stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+            </button>
+            {% endif %}
+
+            {# Divider #}
+            {% if currentUserCanComment %}
+            <span class="w-px h-3 bg-slate-200 dark:bg-slate-700"></span>
+
+            {# Reply #}
+            <button data-blogportal-handler="onCreateReply"
+                    data-blogportal-id="{{ comment.id }}"
+                    class="inline-flex items-center gap-1.5 text-[12px] font-bold
+                           text-slate-500 dark:text-slate-400
+                           hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-150">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                {{ 'spanjaan.blogportal::lang.frontend.comments.reply'|trans }}
+            </button>
+            {% endif %}
+
+        </div>
+        {% endif %}
+
+    </div>
 </div>

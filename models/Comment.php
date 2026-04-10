@@ -7,6 +7,7 @@ namespace SpAnjaan\BlogPortal\Models;
 use Lang;
 use Markdown;
 use Model;
+use SpAnjaan\BlogPortal\Models\BlogPortalSettings;
 use SpAnjaan\BlogPortal\Models\Visitor;
 
 /**
@@ -14,8 +15,11 @@ use SpAnjaan\BlogPortal\Models\Visitor;
  */
 class Comment extends Model
 {
-    use \Winter\Storm\Database\Traits\SimpleTree;
-    use \Winter\Storm\Database\Traits\Validation;
+    /** Time interval constants (in seconds) */
+    public const SECONDS_28_DAYS = 2419200;  // 28 days
+    public const SECONDS_1_DAY = 86400;      // 1 day
+    public const SECONDS_1_HOUR = 3600;     // 1 hour
+    public const SECONDS_1_MINUTE = 60;      // 1 minute
 
     /**
      * Table associated with this Model
@@ -36,9 +40,7 @@ class Comment extends Model
      *
      * @var array
      */
-    protected $guarded = [
-        '*'
-    ];
+    protected $guarded = [];
 
     /**
      * Fillable Model attributes
@@ -61,10 +63,10 @@ class Comment extends Model
      * @var array rules for validation
      */
     public $rules = [
-        'author' => 'nullable|string|min:3',
+        'author'       => 'nullable|string|min:3',
         'author_email' => 'nullable|email',
-        'status' => 'required|in:pending,approved,rejected,spam',
-        'content' => 'required|string|min:3'
+        'status'       => 'required|in:pending,approved,rejected,spam',
+        'content'      => 'required|string|min:3'
     ];
 
     /**
@@ -95,7 +97,10 @@ class Comment extends Model
      * @var array
      */
     public $belongsTo = [
-        'post' => \Winter\Blog\Models\Post::class,
+        'post'   => [
+            \Winter\Blog\Models\Post::class,
+            'key' => 'post_id'
+        ],
         'parent' => Comment::class,
     ];
 
@@ -107,6 +112,7 @@ class Comment extends Model
     public $hasMany = [
         'children' => [
             Comment::class,
+            'key' => 'parent_id',
         ]
     ];
 
@@ -117,7 +123,7 @@ class Comment extends Model
      */
     public $morphTo = [
         'authorable' => [
-            'id' => 'author_id',
+            'id'   => 'author_id',
             'type' => 'author_table'
         ]
     ];
@@ -130,10 +136,10 @@ class Comment extends Model
     public function getStatusOptions()
     {
         return [
-            'pending'   => Lang::get('spanjaan.blogportal::lang.model.comments.statusPending'),
-            'approved'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusApproved'),
-            'rejected'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusRejected'),
-            'spam'      => Lang::get('spanjaan.blogportal::lang.model.comments.statusSpam')
+            'pending'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusPending'),
+            'approved' => Lang::get('spanjaan.blogportal::lang.model.comments.statusApproved'),
+            'rejected' => Lang::get('spanjaan.blogportal::lang.model.comments.statusRejected'),
+            'spam'     => Lang::get('spanjaan.blogportal::lang.model.comments.statusSpam')
         ];
     }
 
@@ -161,6 +167,11 @@ class Comment extends Model
                 $this->approved_at = null;
             }
         }
+
+        if ($this->status === 'pending') {
+            $this->approved_at = null;
+            $this->rejected_at = null;
+        }
     }
 
     /**
@@ -170,7 +181,7 @@ class Comment extends Model
      */
     public function setContentAttribute(string $content)
     {
-        $this->attributes['content'] = $content;
+        $this->attributes['content']      = $content;
         $this->attributes['content_html'] = Markdown::parse($content);
     }
 
@@ -189,57 +200,131 @@ class Comment extends Model
     }
 
     /**
-     * [GETTER] Comment Content (deprecated version)
-     * @deprecated 1.3.4 (Please use comment_content instead), will be removed in 1.5.0!
-     *
-     * @return string
+     * [ACCESSOR] Default avatar (80px)
+     * Usage: $comment->avatar
      */
-    public function getRenderContentAttribute(): string
+    public function getAvatarAttribute(): string
     {
-        return $this->getCommentContentAttribute();
+        return $this->getAvatar(80);
     }
 
+
     /**
-     * [GETTER] Get Author [GR]avatar
+     * Get avatar with custom size
+     * Usage: $comment->getAvatar(120)
      *
      * @param int $size
      * @return string
      */
-    public function getAvatarAttribute($size = 80)
+    public function getAvatar(int $size = 80): string
     {
+        // 1️⃣ If author_email exists → Gravatar
         if (!empty($this->author_email)) {
-            $email = md5(strtolower($this->author_email ?? 'none'));
-        } elseif ($this->author_id) {
-            if ($this->author_table === 'Backend\Models\User') {
-                return $this->authorable->getAvatarThumb($size);
-            } else {
-                $email = md5(strtolower($this->authorable->email ?? 'none'));
-            }
-        } else {
-            $email = md5('none');
+            return $this->getGravatar($this->author_email, $size);
         }
 
-        return 'https://www.gravatar.com/avatar/' . $email . '?s=' . $size . '&d=mp';
+        // 2️⃣ If author relation exists
+        if ($this->author_id && $this->authorable) {
+
+            // Backend User
+            if ($this->author_table === 'Backend\Models\User') {
+                if (method_exists($this->authorable, 'getAvatarThumb')) {
+                    return $this->authorable->getAvatarThumb($size);
+                }
+            }
+
+            // Frontend User (Winter User plugin)
+            if (in_array(class_basename($this->author_table), ['User', 'UserModel'])) {
+
+                // If avatar image exists
+                if (!empty($this->authorable->avatar)) {
+                    try {
+                        return $this->authorable->avatar->getThumb(
+                            $size,
+                            $size,
+                            ['mode' => 'crop']
+                        );
+                    } catch (\Exception $e) {
+                        // fallback to gravatar below
+                    }
+                }
+
+                // If no avatar → fallback to email gravatar
+                if (!empty($this->authorable->email)) {
+                    return $this->getGravatar($this->authorable->email, $size);
+                }
+            }
+
+            // Other models fallback
+            if (!empty($this->authorable->email)) {
+                return $this->getGravatar($this->authorable->email, $size);
+            }
+        }
+
+        // 3️⃣ Default fallback
+        return $this->getGravatar('none', $size);
+    }
+
+
+    /**
+     * Generate Gravatar URL
+     *
+     * @param string $email
+     * @param int $size
+     * @return string
+     */
+    protected function getGravatar(string $email, int $size): string
+    {
+        $hash = md5(strtolower(trim($email)));
+        return "https://www.gravatar.com/avatar/{$hash}?s={$size}&d=mp";
     }
 
     /**
-     * [GETTER] Authors display name, depending on the author type
+     * [GETTER] Author's display name, depending on the author type
      *
      * @return string
      */
     public function getDisplayNameAttribute(): string
     {
+        // 1️⃣ If author manually entered a name (guest or custom)
         if (!empty($this->author)) {
             return $this->author;
-        } elseif ($this->author_id) {
-            if ($this->author_table === 'Backend\Models\User') {
-                return $this->authorable->blogportal_display();
-            } else {
-                return $this->authorable->username;
-            }
-        } else {
-            return trans('spanjaan.blogportal::lang.model.comments.guest');
         }
+
+        // 2️⃣ If author_id exists
+        if ($this->author_id && $this->authorable) {
+
+            // Backend user (admin) — use BlogPortal behavior
+            if ($this->author_table === 'Backend\Models\User') {
+                return $this->authorable->blogportal->getDisplayName();
+            }
+
+            // Frontend user (Winter/User plugin)
+            $frontendUser = $this->authorable;
+
+            // Prefer 'name' field
+            if (!empty($frontendUser->name)) {
+                return $frontendUser->name;
+            }
+
+            // If only first_name / last_name exists
+            if (!empty($frontendUser->first_name) || !empty($frontendUser->last_name)) {
+                return trim(($frontendUser->first_name ?? '') . ' ' . ($frontendUser->last_name ?? ''));
+            }
+
+            // Fallback to username
+            if (!empty($frontendUser->username)) {
+                return $frontendUser->username;
+            }
+
+            // Fallback to email prefix
+            if (!empty($frontendUser->email)) {
+                return explode('@', $frontendUser->email)[0];
+            }
+        }
+
+        // 3️⃣ Default guest
+        return trans('spanjaan.blogportal::lang.model.comments.guest');
     }
 
     /**
@@ -251,16 +336,16 @@ class Comment extends Model
     {
         $seconds = (time() - $this->created_at->getTimestamp());
 
-        if ($seconds >= 2419200) {
+        if ($seconds >= self::SECONDS_28_DAYS) {
             return date('F, j. Y - H:i', $this->created_at->getTimestamp());
-        } elseif ($seconds >= 86400) {
-            $amount = intval($seconds / 86400);
+        } elseif ($seconds >= self::SECONDS_1_DAY) {
+            $amount = intval($seconds / self::SECONDS_1_DAY);
             $format = 'days';
-        } elseif ($seconds >= 3600) {
-            $amount = intval($seconds / 3600);
+        } elseif ($seconds >= self::SECONDS_1_HOUR) {
+            $amount = intval($seconds / self::SECONDS_1_HOUR);
             $format = 'hours';
-        } elseif ($seconds >= 60) {
-            $amount = intval($seconds / 60);
+        } elseif ($seconds >= self::SECONDS_1_MINUTE) {
+            $amount = intval($seconds / self::SECONDS_1_MINUTE);
             $format = 'minutes';
         } else {
             return trans('spanjaan.blogportal::lang.model.comments.seconds_ago');
@@ -326,7 +411,7 @@ class Comment extends Model
      *
      * @return bool
      */
-    public function dislike()
+    public function dislike(): bool
     {
         $visitor = Visitor::currentUser();
 
@@ -356,9 +441,9 @@ class Comment extends Model
      */
     public function changeStatus(string $status): bool
     {
-        $this->status = $status;
+        $this->status      = $status;
         $this->approved_at = $status === 'approved' ? date("Y-m-d H:i:s") : null;
-        $this->rejected_at = $status !== 'approved' ? date("Y-m-d H:i:s") : null;
+        $this->rejected_at = in_array($status, ['rejected', 'spam']) ? date("Y-m-d H:i:s") : null;
         return $this->save();
     }
 

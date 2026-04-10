@@ -1,0 +1,340 @@
+/* ============================================
+   STATS BAR
+   ============================================ */
+.report-widget .widget-postslist .status-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    padding: 14px 16px !important;
+    background: #f9f9f8 !important;
+    border-radius: 10px !important;
+    border: 0.5px solid #e5e5e5 !important;
+    margin-bottom: 16px !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-total {
+    font-size: 15px !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-label {
+    color: #999 !important;
+    font-weight: 400 !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-value {
+    color: #1a1a1a !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+.report-widget .widget-postslist .status-bar .status-badges {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-badges .status-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-badges .badge-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-badges .status-badge-published {
+    background: #dcfce7 !important;
+    color: #166534 !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-badges .status-badge-published .badge-dot {
+    background: #22c55e !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-badges .status-badge-scheduled {
+    background: #fef9c3 !important;
+    color: #854d0e !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-badges .status-badge-scheduled .badge-dot {
+    background: #eab308 !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-badges .status-badge-draft {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+}
+
+.report-widget .widget-postslist .status-bar .status-badges .status-badge-draft .badge-dot {
+    background: #3b82f6 !important;
+}
+
+/* ============================================
+   ORDER BUTTONS
+   ============================================ */
+.report-widget .widget-postslist .order-bar {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin-bottom: 12px !important;
+}
+
+.report-widget .widget-postslist .order-bar .order-btn {
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border: 0.5px solid #e5e5e5 !important;
+    cursor: pointer !important;
+    background: #fff !important;
+    color: #666 !important;
+}
+
+.report-widget .widget-postslist .order-bar .order-btn.active {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+    border-radius: 20px !important;
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+}
+
+/* ============================================
+   POSTS LIST
+   ============================================ */
+.report-widget .widget-postslist .posts-list {
+    background: #fff !important;
+    padding: 10px !important;
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+}
+
+.report-widget .widget-postslist .posts-list .row {
+    margin-left: -5px !important;
+    margin-right: -5px !important;
+}
+
+.report-widget .widget-postslist .posts-list .row .col-md-6 {
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    margin-bottom: 10px !important;
+}
+
+.report-widget .widget-postslist .posts-list .row .col-md-6:last-child,
+.report-widget .widget-postslist .posts-list .row .col-md-6:nth-last-child(2):nth-child(odd) {
+    margin-bottom: 0 !important;
+}
+
+.report-widget .widget-postslist .posts-list .post-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 8px 12px !important;
+    border: 0.5px solid #e5e5e5 !important;
+    margin-bottom: 0 !important;
+    border-radius: 10px !important;
+}
+
+.report-widget .widget-postslist .posts-list .post-item .post-rank {
+    color: #999 !important;
+    font-weight: bold !important;
+    flex-shrink: 0 !important;
+    min-width: 24px !important;
+}
+
+.report-widget .widget-postslist .posts-list .post-item .post-title {
+    flex: 1 !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.report-widget .widget-postslist .posts-list .post-item .post-stats {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.report-widget .widget-postslist .posts-list .post-item .post-stats .post-stat {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 3px 8px !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    background: #e6efff !important;
+    color: #466fc2 !important;
+    white-space: nowrap !important;
+}
+
+/* ============================================
+   DARK MODE — System preference
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+
+    .report-widget .widget-postslist .status-bar {
+        background: #1f2937 !important;
+        border-color: #374151 !important;
+    }
+
+    .report-widget .widget-postslist .status-bar .status-label {
+        color: #9ca3af !important;
+    }
+
+    .report-widget .widget-postslist .status-bar .status-value {
+        color: #f3f4f6 !important;
+    }
+
+    .report-widget .widget-postslist .status-bar .status-badges .status-badge-published {
+        background: #14532d !important;
+        color: #86efac !important;
+    }
+
+    .report-widget .widget-postslist .status-bar .status-badges .status-badge-published .badge-dot {
+        background: #22c55e !important;
+    }
+
+    .report-widget .widget-postslist .status-bar .status-badges .status-badge-scheduled {
+        background: #713f12 !important;
+        color: #fde047 !important;
+    }
+
+    .report-widget .widget-postslist .status-bar .status-badges .status-badge-scheduled .badge-dot {
+        background: #eab308 !important;
+    }
+
+    .report-widget .widget-postslist .status-bar .status-badges .status-badge-draft {
+        background: #1e3a8a !important;
+        color: #93c5fd !important;
+    }
+
+    .report-widget .widget-postslist .status-bar .status-badges .status-badge-draft .badge-dot {
+        background: #3b82f6 !important;
+    }
+
+    .report-widget .widget-postslist .order-bar .order-btn {
+        background: #1f2937 !important;
+        color: #9ca3af !important;
+        border-color: #374151 !important;
+    }
+
+    .report-widget .widget-postslist .order-bar .order-btn.active {
+        background: #1e3a8a !important;
+        color: #93c5fd !important;
+    }
+
+    .report-widget .widget-postslist .posts-list {
+        background: #111827 !important;
+        border-color: #374151 !important;
+    }
+
+    .report-widget .widget-postslist .posts-list .post-item {
+        border-color: #1f2937 !important;
+    }
+
+    .report-widget .widget-postslist .posts-list .post-item .post-rank {
+        color: #6b7280 !important;
+    }
+
+    .report-widget .widget-postslist .posts-list .post-item .post-title {
+        color: #d1d1d1 !important;
+    }
+
+    .report-widget .widget-postslist .posts-list .post-item .post-stats .post-stat {
+        background: #1f2937 !important;
+        color: #9ca3af !important;
+    }
+}
+
+/* ============================================
+   DARK MODE — .dark class (manual toggle)
+   ============================================ */
+.dark .report-widget .widget-postslist .status-bar {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark .report-widget .widget-postslist .status-bar .status-label {
+    color: #9ca3af !important;
+}
+
+.dark .report-widget .widget-postslist .status-bar .status-value {
+    color: #f3f4f6 !important;
+}
+
+.dark .report-widget .widget-postslist .status-bar .status-badges .status-badge-published {
+    background: #14532d !important;
+    color: #86efac !important;
+}
+
+.dark .report-widget .widget-postslist .status-bar .status-badges .status-badge-published .badge-dot {
+    background: #22c55e !important;
+}
+
+.dark .report-widget .widget-postslist .status-bar .status-badges .status-badge-scheduled {
+    background: #713f12 !important;
+    color: #fde047 !important;
+}
+
+.dark .report-widget .widget-postslist .status-bar .status-badges .status-badge-scheduled .badge-dot {
+    background: #eab308 !important;
+}
+
+.dark .report-widget .widget-postslist .status-bar .status-badges .status-badge-draft {
+    background: #1e3a8a !important;
+    color: #93c5fd !important;
+}
+
+.dark .report-widget .widget-postslist .status-bar .status-badges .status-badge-draft .badge-dot {
+    background: #3b82f6 !important;
+}
+
+.dark .report-widget .widget-postslist .order-bar .order-btn {
+    background: #1f2937 !important;
+    color: #9ca3af !important;
+    border-color: #374151 !important;
+}
+
+.dark .report-widget .widget-postslist .order-bar .order-btn.active {
+    background: #1e3a8a !important;
+    color: #93c5fd !important;
+}
+
+.dark .report-widget .widget-postslist .posts-list {
+    background: #111827 !important;
+    border-color: #374151 !important;
+}
+
+.dark .report-widget .widget-postslist .posts-list .post-item {
+    border-color: #1f2937 !important;
+}
+
+.dark .report-widget .widget-postslist .posts-list .post-item .post-rank {
+    color: #6b7280 !important;
+}
+
+.dark .report-widget .widget-postslist .posts-list .post-item .post-title {
+    color: #d1d1d1 !important;
+}
+
+.dark .report-widget .widget-postslist .posts-list .post-item .post-stats .post-stat {
+    background: #1f2937 !important;
+    color: #9ca3af !important;
+}

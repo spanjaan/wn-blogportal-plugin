@@ -106,7 +106,7 @@ class BlogPortalBackendUser
             $name = $this->model->first_name;
         }
         if ($this->model->last_name) {
-            $name = ($this->model->last_name ? ' ' : '') . $this->model->first_name;
+            $name .= ($name ? ' ' : '') . $this->model->last_name;
         }
         return empty($name) ? ucfirst($this->model->login) : $name;
     }

@@ -1,6 +1,21 @@
-<div class="comment-form-reply-to">
-    <div class="bg-secondary border rounded mb-2">
-        {% partial '@_single' comment=comment skip_footer=true %}
+<div class="mb-4 comment-form-reply-to">
+    <div class="flex items-center gap-2 mb-2">
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wide">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+            Replying to
+        </span>
     </div>
-    <hr>
+    <div class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-4 border-l-purple-500 dark:border-l-purple-500 rounded-xl p-4">
+        <div class="flex items-center gap-3 mb-2">
+            <img src="{{ comment.avatar }}" alt="{{ comment.display_name }}"
+                class="w-8 h-8 rounded-full object-cover ring-2 ring-white dark:ring-slate-700 shadow-sm flex-shrink-0">
+            <div>
+                <strong class="block text-sm font-semibold text-slate-800 dark:text-slate-100">{{ comment.display_name }}</strong>
+                <time class="text-[11px] text-slate-400 dark:text-slate-500 font-mono">{{ comment.published_ago }}</time>
+            </div>
+        </div>
+        <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed prose max-w-none dark:prose-dark lang-np:prose-devanagari">
+            {{ comment.comment_content | raw }}
+        </div>
+    </div>
 </div>

@@ -82,7 +82,10 @@ class ArchiveLinks extends ComponentBase
                 'month'     => $post->month,
                 'monthName' => $monthName,
                 'count'     => $post->post_count,
-                'url'       => $this->controller->pageUrl($this->property('archivePage'), ['date' => $post->year . '-' . ltrim((string)$post->month, '0')])
+                'url'       => $this->controller->pageUrl($this->property('archivePage'), [
+                    'date' => $post->year . '-' . str_pad((string)$post->month, 2, '0', STR_PAD_LEFT),
+                    'page' => null // remove pagination
+                ])
             ];
         }
 

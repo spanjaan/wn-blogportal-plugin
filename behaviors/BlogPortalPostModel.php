@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Behaviors;
 
-use Cms\Classes\Controller;
 use Winter\Storm\Extension\ExtensionBase;
 use Winter\Blog\Models\Post;
 use SpAnjaan\BlogPortal\Classes\BlogPortalPost;
@@ -25,7 +24,7 @@ class BlogPortalPostModel extends ExtensionBase
      *
      * @var ?BlogPortalPost
      */
-    protected ?BlogPortalPost $blogportalSet;
+    protected ?BlogPortalPost $blogportalSet = null;
 
     /**
      * Constructor
@@ -36,7 +35,6 @@ class BlogPortalPostModel extends ExtensionBase
     {
         $this->model = $model;
 
-        // Add Blog Comments
         $model->hasMany['spanjaan_blogportal_comments'] = [
             Comment::class
         ];
@@ -46,34 +44,29 @@ class BlogPortalPostModel extends ExtensionBase
             'count' => true
         ];
 
-        // Add Blog Tags
         $model->belongsToMany['spanjaan_blogportal_tags'] = [
             Tag::class,
             'table' => 'spanjaan_blogportal_tags_posts',
             'order' => 'slug'
         ];
 
-        // Register Tags Scope
         $model->addDynamicMethod('scopeFilterTags', function ($query, $tags) {
             return $query->whereHas('spanjaan_blogportal_tags', function ($q) use ($tags) {
-                $q->withoutGlobalScope(NestedTreeScope::class)->whereIn('id', $tags);
+                $q->whereIn('id', $tags);
             });
         });
-
     }
-
 
     /**
      * Get main BlogPortal Space
      *
      * @return BlogPortalPost
      */
-    public function getBlogportalAttribute()
+    public function getBlogportalAttribute(): BlogPortalPost
     {
-        if (empty($this->blogportalSet)) {
+        if ($this->blogportalSet === null) {
             $this->blogportalSet = new BlogPortalPost($this->model);
         }
         return $this->blogportalSet;
     }
-
 }

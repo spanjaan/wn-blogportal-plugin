@@ -1,14 +1,17 @@
 {
     "name": "spanjaan/wn-blogportal-plugin",
     "type": "winter-plugin",
-    "version": "1.0.6",
-    "description": "Extends Winter's Blog plugin with tag, archives, comments, and post share.",
+    "version": "2.0.0",
+    "description": "Extends Winter's Blog plugin with tags, archives, comments, view tracking, social sharing, and author features.",
     "keywords": [
         "winter", 
         "blogportal",
         "wintercms", 
         "blog",
-        "archives"
+        "comments",
+        "tags",
+        "archives",
+        "shares"
     ],
     "license": "MIT",
     "authors": [
@@ -30,7 +33,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.0",
         "composer/installers": "~1.0",
         "gregwar/captcha": "^1.2"
     },

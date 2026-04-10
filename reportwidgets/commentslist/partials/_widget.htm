@@ -1,66 +1,44 @@
 <div class="report-widget">
     <h3><?= Lang::get('spanjaan.blogportal::lang.model.comments.label') ?></h3>
 
-    <div class="blogportal-report-widget">
-        <ul class="nav">
-            <li class="nav-item">
-                <button class="nav-link position-relative <?= $status === 'pending' ? 'active' : '' ?>"
-                    data-tab="pending" data-request="onChangeTab" data-request-data="tab: 'pending'"
-                    data-request-success="[].map.call(this.closest('ul').querySelectorAll('[data-tab]'), e => e.classList[e.dataset.tab == data.tab? 'add': 'remove']('active'))">
-                    <?= Lang::get('spanjaan.blogportal::lang.model.comments.statusPending') ?>
-                    <span
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary text-light"
-                        data-counter="pending">
-                        <?= $counts['pending'] ?>
-                    </span>
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link position-relative <?= $status === 'approved' ? 'active' : '' ?>"
-                    data-tab="approved" data-request="onChangeTab" data-request-data="tab: 'approved'"
-                    data-request-success="[].map.call(this.closest('ul').querySelectorAll('[data-tab]'), e => e.classList[e.dataset.tab == data.tab? 'add': 'remove']('active'))">
-                    <?= Lang::get('spanjaan.blogportal::lang.model.comments.statusApproved') ?>
-                    <span
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary text-light"
-                        data-counter="approved">
-                        <?= $counts['approved'] ?>
-                    </span>
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link position-relative <?= $status === 'rejected' ? 'active' : '' ?>"
-                    data-tab="rejected" data-request="onChangeTab" data-request-data="tab: 'rejected'"
-                    data-request-success="[].map.call(this.closest('ul').querySelectorAll('[data-tab]'), e => e.classList[e.dataset.tab == data.tab? 'add': 'remove']('active'))">
-                    <?= Lang::get('spanjaan.blogportal::lang.model.comments.statusRejected') ?>
-                    <span
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary text-light"
-                        data-counter="rejected">
-                        <?= $counts['rejected'] ?>
-                    </span>
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link position-relative<?= $status === 'spam' ? 'active' : '' ?>"
-                    data-tab="spam" data-request="onChangeTab" data-request-data="tab: 'spam'"
-                    data-request-success="[].map.call(this.closest('ul').querySelectorAll('[data-tab]'), e => e.classList[e.dataset.tab == data.tab? 'add': 'remove']('active'))">
-                    <?= Lang::get('spanjaan.blogportal::lang.model.comments.statusSpam') ?>
-                    <span
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary text-light"
-                        data-counter="spam">
-                        <?= $counts['spam'] ?>
-                    </span>
-                </button>
-            </li>
-        </ul>
+    <ul class="action-bar">
+        <li>
+            <button class="action-button <?= $status === 'pending' ? 'active' : '' ?>" data-tab="pending" data-request="onChangeTab" data-request-data="tab: 'pending'"
+                data-request-success="[].map.call(this.closest('ul').querySelectorAll('[data-tab]'), e => e.classList[e.dataset.tab == data.tab? 'add': 'remove']('active'))">
+                <?= Lang::get('spanjaan.blogportal::lang.model.comments.statusPending') ?>
+                <span class="badge" data-counter="pending"><?= $counts['pending'] ?></span>
+            </button>
+        </li>
+        <li>
+            <button class="action-button <?= $status === 'approved' ? 'active' : '' ?>" data-tab="approved" data-request="onChangeTab" data-request-data="tab: 'approved'"
+                data-request-success="[].map.call(this.closest('ul').querySelectorAll('[data-tab]'), e => e.classList[e.dataset.tab == data.tab? 'add': 'remove']('active'))">
+                <?= Lang::get('spanjaan.blogportal::lang.model.comments.statusApproved') ?>
+                <span class="badge" data-counter="approved"><?= $counts['approved'] ?></span>
+            </button>
+        </li>
+        <li>
+            <button class="action-button <?= $status === 'rejected' ? 'active' : '' ?>" data-tab="rejected" data-request="onChangeTab" data-request-data="tab: 'rejected'"
+                data-request-success="[].map.call(this.closest('ul').querySelectorAll('[data-tab]'), e => e.classList[e.dataset.tab == data.tab? 'add': 'remove']('active'))">
+                <?= Lang::get('spanjaan.blogportal::lang.model.comments.statusRejected') ?>
+                <span class="badge" data-counter="rejected"><?= $counts['rejected'] ?></span>
+            </button>
+        </li>
+        <li>
+            <button class="action-button <?= $status === 'spam' ? 'active' : '' ?>" data-tab="spam" data-request="onChangeTab" data-request-data="tab: 'spam'"
+                data-request-success="[].map.call(this.closest('ul').querySelectorAll('[data-tab]'), e => e.classList[e.dataset.tab == data.tab? 'add': 'remove']('active'))">
+                <?= Lang::get('spanjaan.blogportal::lang.model.comments.statusSpam') ?>
+                <span class="badge" data-counter="spam"><?= $counts['spam'] ?></span>
+            </button>
+        </li>
+    </ul>
 
-        <div class="comments-list">
-            <div id="commentPartial" class="comment-panel border rounded">
-                <?= $commentPartial ?>
-            </div>
+    <div class="widget-body">
+        <div id="listPartial">
+            <?= $listPartial ?>
+        </div>
 
-            <div id="listPartial" class="comment-next">
-                <?= $listPartial ?>
-            </div>
+        <div id="commentPartial">
+            <?= $commentPartial ?>
         </div>
     </div>
 </div>

@@ -12,7 +12,6 @@ use Cms\Classes\Controller;
 use Cms\Classes\Page;
 use Cms\Classes\Theme;
 use SpAnjaan\BlogPortal\Models\Comment;
-use System\Classes\UpdateManager;
 use Flash;
 
 class CommentsList extends ReportWidgetBase
@@ -44,7 +43,7 @@ class CommentsList extends ReportWidgetBase
                 'type'          => 'dropdown',
                 'options'       => [
                     'pending'   => Lang::get('spanjaan.blogportal::lang.model.comments.statusPending'),
-                    'accepted'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusApproved'),
+                    'approved'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusApproved'),
                     'rejected'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusRejected'),
                     'spam'      => Lang::get('spanjaan.blogportal::lang.model.comments.statusSpam')
                 ]
@@ -70,8 +69,7 @@ class CommentsList extends ReportWidgetBase
      */
     protected function loadAssets()
     {
-        //$this->addCss('/plugins/spanjaan/blogportal/assets/css/widget-commentslist.css');
-        $this->addCss('/plugins/spanjaan/blogportal/assets/css/widget-winter.css');
+        $this->addCss('css/comment-list.css');
     }
 
     /**
@@ -86,7 +84,7 @@ class CommentsList extends ReportWidgetBase
             $defaultTab = 'pending';
         }
 
-        $comments = Comment::where('status', $defaultTab)->orderBy('created_at', 'DESC')->limit(6)->get();
+        $comments = Comment::where('status', $defaultTab)->orderBy('created_at', 'DESC')->get();
         if ($comments->count() === 0) {
             $comment = null;
         } else {
@@ -130,7 +128,7 @@ class CommentsList extends ReportWidgetBase
         }
 
         // Load Comments
-        $comments = Comment::where('status', $tab)->orderBy('created_at', 'DESC')->limit(6)->get();
+        $comments = Comment::where('status', $tab)->orderBy('created_at', 'DESC')->get();
         if ($comments->count() === 0) {
             $comment = null;
         } else {
@@ -153,7 +151,7 @@ class CommentsList extends ReportWidgetBase
     }
 
     /**
-     * AJAX Handler - Change Focued Comment
+     * AJAX Handler - Change Focused Comment
      *
      * @return array
      */
@@ -173,7 +171,7 @@ class CommentsList extends ReportWidgetBase
         $comments = Comment::where('status', empty($comment) ? 'unknown' : $comment->status)
             ->where('id', '!=', $commentId)
             ->orderBy('created_at', 'DESC')
-            ->limit(5)->get();
+            ->get();
 
         // Return Response
         return [
@@ -195,6 +193,10 @@ class CommentsList extends ReportWidgetBase
     {
         $status = input('status');
         $comment_id = input('comment_id');
+        $currentTab = input('tab', 'pending');
+        if (!in_array($currentTab, ['pending', 'approved', 'rejected', 'spam'])) {
+            $currentTab = 'pending';
+        }
 
         // Check if user has Permission
         if (!(BackendAuth::check() && BackendAuth::getUser()->hasPermission('spanjaan.blogportal.comments.moderate_comments'))) {
@@ -217,7 +219,7 @@ class CommentsList extends ReportWidgetBase
         }
 
         // Rebuild Comments List
-        $comments = Comment::where('status', 'pending')->orderBy('created_at', 'DESC')->limit(6)->get();
+        $comments = Comment::where('status', $currentTab)->orderBy('created_at', 'DESC')->get();
         if ($comments->count() === 0) {
             $comment = null;
         } else {
@@ -226,8 +228,10 @@ class CommentsList extends ReportWidgetBase
             }
             $comment = $comments->shift();
         }
+
         // Return Response with Flash Message
         Flash::success(Lang::get('spanjaan.blogportal::lang.frontend.success.update_status'));
+
         // Return Response
         return [
             'status' => Lang::get('spanjaan.blogportal::lang.frontend.success.update_status'),

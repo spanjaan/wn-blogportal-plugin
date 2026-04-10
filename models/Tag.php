@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Models;
 
+use Cms\Classes\Controller;
 use Model;
-use Illuminate\Support\Str;
+use Winter\Storm\Support\Str;
 
 class Tag extends Model
 {
     use \Winter\Storm\Database\Traits\Validation;
+
+    public $implement = ['@Winter.Translate.Behaviors.TranslatableModel'];
 
     /**
      * Table associated with this Model
@@ -48,10 +51,10 @@ class Tag extends Model
     ];
 
     /**
-    * Default values for model fields
-    *
-    * @var array
-    */
+     * Default values for model fields
+     *
+     * @var array
+     */
     public $attributes = [
         'color' => '#007bff'
     ];
@@ -62,7 +65,17 @@ class Tag extends Model
      * @var array
      */
     public $rules = [
-        'slug' => 'required|unique:spanjaan_blogportal_tags'
+        'slug'  => 'required|between:3,64|unique:spanjaan_blogportal_tags',
+        'title' => 'required|unique:spanjaan_blogportal_tags',
+    ];
+
+    /**
+     * @var array Attributes that support translation, if available.
+     */
+    public $translatable = [
+        'title',
+        'description',
+        ['slug', 'index' => true],
     ];
 
     /**
@@ -96,12 +109,13 @@ class Tag extends Model
 
     /**
      * Hook - Before Model is saved
+     * Only auto-generate slug from title if slug is not already set manually.
      *
      * @return void
      */
     public function beforeSave()
     {
-        if ($this->isDirty('title')) {
+        if ($this->isDirty('title') && empty($this->slug)) {
             $this->slug = Str::slug($this->title);
         }
     }
@@ -114,7 +128,7 @@ class Tag extends Model
      * @param array $params Override request URL parameters
      * @return string
      */
-    public function setUrl($pageName, $controller, $params = [])
+    public function setUrl(string $pageName, Controller $controller, array $params = []): string
     {
         $params = array_merge([
             'id'   => $this->id,
@@ -129,7 +143,7 @@ class Tag extends Model
      *
      * @return int
      */
-    public function getPostCountAttribute()
+    public function getPostCountAttribute(): int
     {
         return optional($this->posts_count->first())->count ?? 0;
     }

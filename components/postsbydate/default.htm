@@ -1,29 +1,19 @@
 {% set posts = __SELF__.posts %}
 
-<ul class="post-list list-unstyled">
-    {% for post in posts %}
-        <li class="d-flex flex-column">
-            <h3>
-                <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
-            </h3>
+<div class="relative">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+            <div class="w-1.5 h-8 bg-gradient-to-b from-violet-500 to-fuchsia-500 rounded-full"></div>
+            <h2 class="text-xl font-semibold text-zinc-900 dark:text-white">{{ __SELF__.property('title') ?: 'Posts by Date' }}</h2>
+        </div>
+        <div class="hidden lg:block w-32 h-px bg-gradient-to-r from-purple-500/30 to-transparent"></div>
+    </div>
 
-            <p class="info m-0 p-0 text-muted">
-                Posted
-                {% if post.categories | length %} in {% endif %}
-                {% for category in post.categories %}
-                    <a href="{{ category.url }}">{{ category.name }}</a>{% if not loop.last %}, {% endif %}
-                {% endfor %}
-                on 
-                <time datetime="{{ post.published_at }}">{{ post.published_at | date('M d, Y') }}</time>
-            </p>
-
-            <p class="excerpt">{{ post.summary|raw }}</p>
-        </li>
-    {% else %}
-        <li class="no-data">{{ __SELF__.noPostsMessage }}</li>
-    {% endfor %}
-</ul>
-
-{% if posts.lastPage > 1 %}
-    {% partial '@pagination' pagination=posts %}
-{% endif %}
+    <ul class="grid grid-cols-1 lg:grid-cols-3 gap-6 list-none p-0 m-0">
+        {% for post in posts %}
+            {% partial '@partials/_post-card.htm' post=post %}
+        {% else %}
+            {% partial '@partials/_empty-state.htm' noPostsMessage=__SELF__.noPostsMessage %}
+        {% endfor %}
+    </ul>
+</div>

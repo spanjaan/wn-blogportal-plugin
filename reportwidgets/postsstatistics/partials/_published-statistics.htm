@@ -1,5 +1,5 @@
-<h4 class="fs-6 mb-3"><?= Lang::get('spanjaan.blogportal::lang.components.post.published_posts') ?></h4>
-<div class="control-chart wrap-legend" data-control="chart-bar" data-height="200" data-full-width="1">
+<h4 class="stats-box-title"><?= Lang::get('spanjaan.blogportal::lang.components.post.published_posts') ?></h4>
+<div class="control-chart centered wrap-legend" data-control="chart-pie" data-center-text="100" data-size="200">
     <ul>
         <?php foreach ($statistics AS $label => $count): ?>
         <li><?= $label ?> <span><?= $count ?></span></li>

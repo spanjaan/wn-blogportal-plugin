@@ -1,13 +1,69 @@
-.special-assignment {
-    top: 0;
-    left: 0;
-    height: 0;
-    width: 0;
-    z-index: -1;
+/* ============================================================
+   BlogPortal Comments — Styles
+   ============================================================ */
+
+/* ---------- Alerts ---------- */
+.blogportal-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 16px;
+    line-height: 1.5;
     opacity: 0;
-    position: absolute;
+    transform: translateY(-8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-.hidden {
-    display: none;
+.blogportal-alert--success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border: 1px solid #34d399;
+    color: #065f46;
+    box-shadow: 0 2px 12px 0 #34d39940;
 }
+
+.blogportal-alert--danger {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border: 1px solid #f87171;
+    color: #7f1d1d;
+    box-shadow: 0 2px 12px 0 #f8717140;
+}
+
+.blogportal-alert--warning {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #fbbf24;
+    color: #78350f;
+    box-shadow: 0 2px 12px 0 #fbbf2440;
+}
+
+.blogportal-alert__icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+}
+
+.blogportal-alert--success .blogportal-alert__icon { color: #059669; }
+.blogportal-alert--danger  .blogportal-alert__icon { color: #ef4444; }
+.blogportal-alert--warning .blogportal-alert__icon { color: #d97706; }
+
+/* ---------- Field Errors ---------- */
+.blogportal-field-error {
+    font-size: 0.75rem;
+    color: #ef4444;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+}
+
+/* ---------- Field Error State ---------- */
+.blogportal-field--error {
+    border-color: #f87171 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2) !important;
+}
+

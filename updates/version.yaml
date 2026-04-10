@@ -20,4 +20,19 @@
     - v1.0.6/create_sharecounts_table.php
 1.0.7:
     - 'Miner typo fixed'
+1.0.8:
+    - 'Add database indexes for performance'
+    - v1.0.8/add_indexes_to_comments_table.php
+1.0.9:
+    - 'Add indexes to sharecounts, visitors, and tags tables'
+    - v1.0.9/add_indexes_to_sharecounts_and_visitors.php
+2.0.0:
+    - 'Major release: Code refactoring, performance improvements, security fixes'
+    - 'Added reusable post card partials for components'
+    - 'Added settings caching for better performance'
+    - 'Optimized comment query to reduce database cloning'
+    - 'Replaced $_SERVER with Request class for security'
+    - 'Added time interval constants in Comment model'
+    - 'Removed deprecated getRenderContentAttribute method'
+    - 'Added database indexes for all major tables'
 

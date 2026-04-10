@@ -31,6 +31,7 @@ class PopularPosts extends Posts
     {
         $properties = parent::defineProperties();
         unset($properties['sortOrder']);
+        unset($properties['pageNumber']);
         return $properties;
     }
 
@@ -62,7 +63,6 @@ class PopularPosts extends Posts
         $posts = Post::with(['categories', 'featured_images', 'spanjaan_blogportal_tags'])
             ->orderBy('spanjaan_blogportal_views', 'desc')
             ->listFrontEnd([
-                'page'             => $this->property('pageNumber'),
                 'perPage'          => $this->property('postsPerPage'),
                 'search'           => trim(input('search') ?? ''),
                 'category'         => $category,

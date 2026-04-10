@@ -67,14 +67,12 @@ class Tags extends ComponentBase
                 'type'              => 'checkbox',
                 'default'           => '0'
             ],
-            'amount' => [
-                'title'             => 'spanjaan.blogportal::lang.components.tags.amount',
-                'description'       => 'spanjaan.blogportal::lang.components.tags.amount_comment',
-                'type'              => 'string',
-                'validationPattern' => '^[0-9]+$',
-                'validationMessage' => 'spanjaan.blogportal::lang.components.tags.amount_validation',
-                'default'           => '5',
-            ]
+            'hideEmpty' => [
+                'title'             => 'spanjaan.blogportal::lang.components.tags.hide_empty',
+                'description'       => 'spanjaan.blogportal::lang.components.tags.hide_empty_comment',
+                'type'              => 'checkbox',
+                'default'           => '1'
+            ],
         ];
     }
 
@@ -107,17 +105,21 @@ class Tags extends ComponentBase
      */
     protected function listTags()
     {
-        $query = TagModel::withCount(['posts_count'])
-            ->having('posts_count_count', '>', 0)
-            ->orderBy('posts_count_count', 'desc');
+        $query = TagModel::withCount('posts')
+            ->orderBy('posts_count', 'desc');
+
+        if ($this->property('hideEmpty') === '1') {
+            $query->having('posts_count', '>', 0);
+        }
 
         if ($this->property('onlyPromoted') === '1') {
             $query->where('promote', '1');
         }
 
-        $amount = intval($this->property('amount'));
-        $query->limit($amount);
-
-        return $query->get()->each(fn($tag) => $tag->setUrl($this->tagPage, $this->controller));
+        return $query->get()->each(function($tag) {
+            $tag->setUrl($this->tagPage, $this->controller);
+            // Strip any trailing page number (e.g. /2, /3)
+            $tag->url = preg_replace('#/\d+$#', '', $tag->url);
+        });
     }
 }

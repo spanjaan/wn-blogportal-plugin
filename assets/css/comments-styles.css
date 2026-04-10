@@ -1,20 +1,157 @@
-/* Backend comments list row styling */
+/* ===============================
+   Base Transition (Smooth UI)
+================================= */
+.comment-pending td,
+.comment-spam td,
+.comment-rejected td,
+.comment-approved td {
+    transition: all 0.25s ease;
+}
+
+
+/* ===============================
+   Light Mode (Default)
+================================= */
+
+/* Pending */
 .comment-pending th,
 .comment-pending td {
- background: #e1d6ff !important;
+    background: #f4f0ff !important;
+    color: #4c3a8f;
 }
 
+/* Spam */
 .comment-spam th,
 .comment-spam td {
- background: #ffc1c1 !important;
+    background: #ffe5e5 !important;
+    color: #a12626;
 }
 
+/* Rejected */
 .comment-rejected th,
 .comment-rejected td {
- background: #ffc6f6 !important;
+    background: #ffe6fb !important;
+    color: #8a2c6d;
 }
 
+/* Approved */
 .comment-approved th,
 .comment-approved td {
- background: #d4ffd2 !important;
+    background: #e6ffed !important;
+    color: #1f7a3a;
+}
+
+
+/* ===============================
+   Hover Effect (Light)
+================================= */
+tr.comment-pending:hover td {
+    background: #e9e2ff !important;
+}
+
+tr.comment-spam:hover td {
+    background: #ffd6d6 !important;
+}
+
+tr.comment-rejected:hover td {
+    background: #ffd6f5 !important;
+}
+
+tr.comment-approved:hover td {
+    background: #d6ffe0 !important;
+}
+
+
+/* ===============================
+   Dark Mode (Auto - System)
+================================= */
+@media (prefers-color-scheme: dark) {
+
+    .comment-pending th,
+    .comment-pending td {
+        background: #2a224a !important;
+        color: #c7bfff;
+    }
+
+    .comment-spam th,
+    .comment-spam td {
+        background: #4a1f1f !important;
+        color: #ff9b9b;
+    }
+
+    .comment-rejected th,
+    .comment-rejected td {
+        background: #4a1f3f !important;
+        color: #ffb3e6;
+    }
+
+    .comment-approved th,
+    .comment-approved td {
+        background: #1f3a2a !important;
+        color: #8fffaa;
+    }
+
+    /* Hover Dark */
+    tr.comment-pending:hover td {
+        background: #342a66 !important;
+    }
+
+    tr.comment-spam:hover td {
+        background: #5a2a2a !important;
+    }
+
+    tr.comment-rejected:hover td {
+        background: #5a2a4d !important;
+    }
+
+    tr.comment-approved:hover td {
+        background: #2a4a36 !important;
+    }
+}
+
+
+/* ===============================
+   Dark Class (Manual Toggle)
+   Use: <body class="dark">
+================================= */
+
+.dark .comment-pending th,
+.dark .comment-pending td {
+    background: #2a224a !important;
+    color: #c7bfff;
+}
+
+.dark .comment-spam th,
+.dark .comment-spam td {
+    background: #4a1f1f !important;
+    color: #ff9b9b;
+}
+
+.dark .comment-rejected th,
+.dark .comment-rejected td {
+    background: #4a1f3f !important;
+    color: #ffb3e6;
+}
+
+.dark .comment-approved th,
+.dark .comment-approved td {
+    background: #1f3a2a !important;
+    color: #8fffaa;
+}
+
+/* Hover (Dark Class) */
+.dark tr.comment-pending:hover td {
+    background: #342a66 !important;
+}
+
+.dark tr.comment-spam:hover td {
+    background: #5a2a2a !important;
+}
+
+.dark tr.comment-rejected:hover td {
+    background: #5a2a4d !important;
+}
+
+.dark tr.comment-approved:hover td {
+    background: #2a4a36 !important;
 }

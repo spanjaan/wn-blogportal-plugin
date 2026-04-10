@@ -1,23 +1,31 @@
-<nav class="my-4 d-flex justify-content-center">
-    <ul class="pagination">
+{% if pagination.lastPage > 1 %}
+<nav class="flex justify-center mt-6" aria-label="Comments pagination">
+    <ul class="flex items-center gap-1">
         {% for link in pagination.toArray.links %}
-        <li class="page-item">
+        <li>
             {% if link.url %}
-            <a href="{{ link.url }}" class="page-link{% if link.active %} current active{% endif %}">
-                {% else %}
-                <span class="page-link disabled">
-                    {% endif %}
+            <a href="{{ link.url }}"
+                class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-150
+                    {{ link.active
+                        ? 'bg-purple-600 text-white border-purple-600 shadow-sm dark:bg-purple-600 dark:border-purple-600'
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-purple-50 dark:hover:bg-purple-950 hover:border-purple-300 dark:hover:border-purple-600 hover:text-purple-600 dark:hover:text-purple-400' }}">
+            {% else %}
+            <span class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg border border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600 cursor-not-allowed select-none dark:bg-slate-800">
+            {% endif %}
 
-                    {% if link.label == 'pagination.previous' %}
-                    {{ 'spanjaan.blogportal::lang.frontend.comments.previous' | trans }}
-                    {% elseif link.label == 'pagination.next' %}
-                    {{ 'spanjaan.blogportal::lang.frontend.comments.next' | trans }}
-                    {% else %}
-                    {{ link.label }}
-                    {% endif %}
+            {% if link.label == 'pagination.previous' %}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                <span class="hidden sm:inline">{{ 'spanjaan.blogportal::lang.frontend.comments.previous' | trans }}</span>
+            {% elseif link.label == 'pagination.next' %}
+                <span class="hidden sm:inline">{{ 'spanjaan.blogportal::lang.frontend.comments.next' | trans }}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            {% else %}
+                {{ link.label }}
+            {% endif %}
 
-                    {% if link.url %}</a>{% else %}</span>{% endif %}
+            {% if link.url %}</a>{% else %}</span>{% endif %}
         </li>
         {% endfor %}
     </ul>
 </nav>
+{% endif %}

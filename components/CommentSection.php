@@ -83,12 +83,6 @@ class CommentSection extends ComponentBase
                 'type'              => 'dropdown',
                 'default'           => 'created_at desc',
             ],
-            'commentHierarchy' => [
-                'title'             => 'spanjaan.blogportal::lang.components.comments_section.comments_hierarchy',
-                'description'       => 'spanjaan.blogportal::lang.components.comments_section.comments_hierarchy_comment',
-                'type'              => 'checkbox',
-                'default'           => '1'
-            ],
             'commentsAnchor' => [
                 'title'             => 'spanjaan.blogportal::lang.components.comments_section.comments_anchor',
                 'description'       => 'spanjaan.blogportal::lang.components.comments_section.comments_anchor_comment',
@@ -131,7 +125,6 @@ class CommentSection extends ComponentBase
      * Get BlogPortal Settings
      *
      * @param string $key
-     * @param mixed $default
      * @return mixed
      */
     protected function config(string $key)
@@ -192,29 +185,20 @@ class CommentSection extends ComponentBase
     }
 
     /**
-     * Get Comment List
+     * Build base comment query with permissions and filters applied
      *
-     * @return void
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function getComments()
+    protected function buildBaseQuery()
     {
-        $page = empty($this->property('pageNumber')) ? intval(get('cpage')) : intval($this->property('pageNumber'));
-        $limit = $this->property('commentsPerPage');
-        if ($page > 1) {
-            $offset = ($page - 1) * $this->property('commentsPerPage');
-        } else {
-            $offset = 0;
-        }
-
         $order = $this->property('sortOrder');
         if (!array_key_exists($order, $this->getSortOrderOptions())) {
             $order = 'created_at DESC';
         }
 
-        // Start Query
         $query = Comment::where('post_id', $this->post->id);
 
-        // Check Permissions
+        // Apply permission filter
         if ($this->page['currentUserCanModerate']) {
             $query->whereIn('status', ['approved', 'pending']);
         } else {
@@ -231,6 +215,8 @@ class CommentSection extends ComponentBase
         if ($this->property('pinFavorites') === '1') {
             $query->orderByDesc('favorite');
         }
+
+        // Apply sort order
         $orders = explode(' ', $order);
         $query->orderBy($orders[0], strtoupper($orders[1]) === 'DESC' ? 'DESC' : 'ASC');
 
@@ -244,21 +230,105 @@ class CommentSection extends ComponentBase
             }
         }
 
-        // Finish Query
-        $result = $query->get();
-        if ($this->page['showCommentsHierarchical']) {
-            $result = $result->toNested();
+        return $query;
+    }
+
+    /**
+     * Get Comment List
+     *
+     * @return LengthAwarePaginator
+     */
+    protected function getComments()
+    {
+        $page = empty($this->property('pageNumber'))
+            ? max(1, intval(get('cpage')))
+            : max(1, intval($this->property('pageNumber')));
+
+        $limit = max(1, intval($this->property('commentsPerPage')));
+        $offset = ($page - 1) * $limit;
+
+        $baseQuery = $this->buildBaseQuery();
+
+        // Get root comment IDs and count in a single optimized query
+        $rootIds = $baseQuery
+            ->whereNull('parent_id')
+            ->orderByDesc('favorite')
+            ->orderBy('created_at', 'desc')
+            ->skip($offset)
+            ->take($limit)
+            ->pluck('id')
+            ->toArray();
+
+        // Get total count separately (no need to clone entire query structure)
+        $totalRoots = Comment::where('post_id', $this->post->id)
+            ->whereNull('parent_id')
+            ->where(function ($q) use ($baseQuery) {
+                // Re-apply permission filter
+                if ($this->page['currentUserCanModerate']) {
+                    $q->whereIn('status', ['approved', 'pending']);
+                } else {
+                    $q->where('status', 'approved');
+                }
+            })
+            ->count();
+
+        // Early return if no comments
+        if (empty($rootIds)) {
+            $pageName = $this->getPage()->getBaseFileName();
+            return new LengthAwarePaginator(
+                collect(),
+                0,
+                $limit,
+                $page,
+                [
+                    'path'     => $this->controller->pageUrl($pageName, ['slug' => $this->post->slug]),
+                    'fragment' => $this->property('commentsAnchor'),
+                    'pageName' => 'cpage'
+                ]
+            );
         }
+
+        // Collect all descendant IDs in a single query using closure
+        $allIds = $rootIds;
+        $parentIds = $rootIds;
+        
+        while (!empty($parentIds)) {
+            $childIds = Comment::whereIn('parent_id', $parentIds)
+                ->where('post_id', $this->post->id)
+                ->where(function ($q) {
+                    if ($this->page['currentUserCanModerate']) {
+                        $q->whereIn('status', ['approved', 'pending']);
+                    } else {
+                        $q->where('status', 'approved');
+                    }
+                })
+                ->pluck('id')
+                ->toArray();
+
+            if (empty($childIds)) {
+                break;
+            }
+
+            $allIds = array_merge($allIds, $childIds);
+            $parentIds = $childIds;
+        }
+
+        // Get nested comments
+        $nested = Comment::whereIn('id', $allIds)
+            ->orderByDesc('favorite')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->toNested();
 
         $pageName = $this->getPage()->getBaseFileName();
         return new LengthAwarePaginator(
-            $result->slice($offset, $offset + $limit),
-            $result->count(),
+            $nested,
+            $totalRoots,
             $limit,
             $page,
             [
-                'path' => $this->controller->pageUrl($pageName, ['slug' => $this->post->slug]),
-                'fragment' => $this->property('commentAnchor') ?? 'comments',
+                'path'     => $this->controller->pageUrl($pageName, ['slug' => $this->post->slug]),
+                'fragment' => $this->property('commentsAnchor'),
                 'pageName' => 'cpage'
             ]
         );
@@ -283,7 +353,7 @@ class CommentSection extends ComponentBase
     /**
      * Get Frontend User (when Winter.User is installed)
      *
-     * @return ?Winter\User\Models\User
+     * @return Winter\User\Models\User|null
      */
     protected function getFrontendUser()
     {
@@ -303,7 +373,7 @@ class CommentSection extends ComponentBase
     /**
      * Get Backend User
      *
-     * @return ?Backend\Models\User
+     * @return Backend\Models\User|null
      */
     protected function getBackendUser()
     {
@@ -336,7 +406,6 @@ class CommentSection extends ComponentBase
         if (empty($post) || (!empty($post) && $post->spanjaan_blogportal_comment_visible === '0')) {
             $this->page['showComments'] = false;
             $this->page['showCommentsForm'] = false;
-            $this->page['showCommentsHierarchical'] = $this->property('commentHierarchy') === '1';
             $this->page['comments'] = null;
             $this->page['commentsFormPosition'] = $this->property('formPosition');
             $this->page['commentsMode'] = 'closed';
@@ -381,10 +450,10 @@ class CommentSection extends ComponentBase
         $restrict = $this->config('restrict_to_users') === '1';
         $favorite = $this->config('author_favorites') === '1';
 
-        // Show Comments List
+        // Show Comments
         $this->page['showComments'] = true;
-        $this->page['showCommentsHierarchical'] = $this->property('commentHierarchy') === '1';
         $this->page['commentsFormPosition'] = $this->property('formPosition');
+
         if ($this->property('disableForm') === '1') {
             $this->page['commentsMode'] = 'hidden';
             $this->page['showCommentsForm'] = false;
@@ -394,8 +463,8 @@ class CommentSection extends ComponentBase
 
         // Set Comments Mode
         $this->page['commentsMode'] = $post->spanjaan_blogportal_comment_mode;
-        if ($this->config('guest_comments') === '0' && $this->page['commentsMode'] === 'public') {
-            $this->page['commentsMode'] = 'restricted';     // Guests cannot comment [Settings]
+        if ($this->config('guest_comments') === '0' && $this->page['commentsMode'] === 'open') {
+            $this->page['commentsMode'] = 'restricted';
         }
 
         // Set currentUserCanComment
@@ -412,7 +481,7 @@ class CommentSection extends ComponentBase
             $this->page['currentUserCanComment'] = false;
         }
 
-        // Set current user
+        // Current user info
         $this->page['currentUser'] = $user;
         $this->page['currentUserIsGuest'] = !$this->isSomeoneLoggedIn();
         $this->page['currentUserIsFrontend'] = $this->getFrontendUser() !== null;
@@ -429,7 +498,7 @@ class CommentSection extends ComponentBase
             return;
         }
 
-        // Comment Form Fields variables
+        // Comment Form Fields
         $this->page['showCommentFormTitle'] = $this->config('form_comment_title') === '1';
         $this->page['allowCommentFormMarkdown'] = $this->config('form_comment_markdown') === '1';
         $this->page['showCommentFormTos'] = $this->config('form_tos_checkbox') === '1';
@@ -439,7 +508,7 @@ class CommentSection extends ComponentBase
             $this->page['commentFormTosLabel'] = BlogPortalSettings::instance()->getTermsOfServiceLabel();
         }
 
-        // Comment Form Captcha
+        // Captcha
         if ($this->config('form_comment_captcha') === '1' && !$this->page['isLoggedIn']) {
             $hasCaptcha = true;
             $this->page['showCommentFormCaptcha'] = true;
@@ -448,7 +517,7 @@ class CommentSection extends ComponentBase
             $this->page['showCommentFormCaptcha'] = false;
         }
 
-        // Comment Form Honeypot
+        // Honeypot
         if ($this->config('form_comment_honeypot') === '1') {
             $hasHoneypot = true;
             $time = time();
@@ -465,17 +534,20 @@ class CommentSection extends ComponentBase
 
         // Validation fields
         $this->page['validationTime'] = time();
+        
+        // Calculate salt value: 0=none, 5=honeypot, 10=captcha, 15=both
+        $saltValue = ($hasCaptcha ? 10 : 0) + ($hasHoneypot ? 5 : 0);
         $this->page['validationHash'] = hash_hmac(
             'SHA256',
             strval($this->page['validationTime']),
-            strval(0 + ($hasCaptcha ? 10 : 0) + ($hasHoneypot ? 5 : 0))
+            strval($saltValue)
         );
     }
 
     /**
-     * Vertify CSRF and Session Token
+     * Verify CSRF and Session Token
      *
-     * @return void
+     * @return bool
      */
     protected function verifyCsrfToken()
     {
@@ -511,21 +583,27 @@ class CommentSection extends ComponentBase
      */
     protected function verifyValidationCode(string $code, string $time, bool &$hasCaptcha, bool &$hasHoneypot)
     {
-        if (hash_equals(hash_hmac('SHA256', $time, '0'), $code)) {
+        // Salt values: 0 = none, 5 = honeypot, 10 = captcha, 15 = both
+        $saltNone     = '0';
+        $saltHoneypot = '5';
+        $saltCaptcha  = '10';
+        $saltBoth    = '15';
+        
+        if (hash_equals(hash_hmac('SHA256', $time, $saltNone), $code)) {
             return true;
         }
 
-        if (hash_equals(hash_hmac('SHA256', $time, '5'), $code)) {
+        if (hash_equals(hash_hmac('SHA256', $time, $saltHoneypot), $code)) {
             $hasHoneypot = true;
             return true;
         }
 
-        if (hash_equals(hash_hmac('SHA256', $time, '10'), $code)) {
+        if (hash_equals(hash_hmac('SHA256', $time, $saltCaptcha), $code)) {
             $hasCaptcha = true;
             return true;
         }
 
-        if (hash_equals(hash_hmac('SHA256', $time, '15'), $code)) {
+        if (hash_equals(hash_hmac('SHA256', $time, $saltBoth), $code)) {
             $hasCaptcha = true;
             $hasHoneypot = true;
             return true;
@@ -546,7 +624,6 @@ class CommentSection extends ComponentBase
         }
         $this->prepareVars($post);
 
-        // Check if Comment exists
         if (empty($comment_id = input('comment_id'))) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.missing_comment_id'));
         }
@@ -554,24 +631,35 @@ class CommentSection extends ComponentBase
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.invalid_comment_id'));
         }
 
-        // Return Comment
         return $comment;
     }
 
     /**
-     * Retrieve the total number of comments for the post.
+     * Get visible comment count for the post, respecting permissions
      *
-     * @return int The total number of comments.
+     * @return int
      */
     protected function getCommentsCount(): int
     {
-        // Logic to retrieve the total number of comments for the post
-        if (!empty($this->post)) {
-            // Counting the comments related to the post using the Comment model
-            return Comment::where('post_id', $this->post->id)->count();
+        if (empty($this->post)) {
+            return 0;
         }
-        // If no post is available, return 0 comments
-        return 0;
+
+        $query = Comment::where('post_id', $this->post->id);
+
+        if ($this->page['currentUserCanModerate']) {
+            $query->whereIn('status', ['approved', 'pending']);
+        } else {
+            $query->where(function ($builder) {
+                $builder->where('status', 'approved')->orWhere(function ($builder) {
+                    $builder->where('status', 'pending')
+                        ->where('author_id', Visitor::currentUser()->id)
+                        ->where('author_table', 'SpAnjaan\\BlogPortal\\Models\\Visitor');
+                });
+            });
+        }
+
+        return $query->count();
     }
 
     /**
@@ -583,48 +671,32 @@ class CommentSection extends ComponentBase
     {
         $comment = $this->validateAjaxMethod();
 
-        // Get new Status
         if (empty($status = input('status')) || !in_array($status, ['favorite', 'approve', 'reject', 'spam'])) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
         }
 
-        // Favorite Comment
         if ($status === 'favorite') {
-            // Check if Favorite is enabled
             if ($this->config('author_favorites') !== '1') {
                 throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.disabled_method'));
             }
-
-            // Check if current user can favorite
             if (!$this->page['currentUserCanFavorite']) {
                 throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to'));
             }
-
-            // Set Data
             $comment->favorite = !$comment->favorite;
             $result = $comment->save();
-        }
-
-        // Moderate Comment
-        elseif ($status === 'approve' || $status === 'reject' || $status === 'spam') {
-            // Check if current user is backend user
+        } elseif ($status === 'approve' || $status === 'reject' || $status === 'spam') {
             if (!$this->page['currentUserIsBackend']) {
                 throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to'));
             }
-
-            // Check if current user is allowed to moderatoe
             if (!$this->page['currentUserCanModerate']) {
                 throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.no_permissions_for'));
             }
-
-            // Check if State can be changed (Frontend Moderation is limited to pending comments)
             if ($comment->status !== 'pending') {
                 throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
             }
             $result = $comment->{$status}();
         }
 
-        // Return Result
         if (isset($result) && $result) {
             return [
                 'status' => 'success',
@@ -646,22 +718,18 @@ class CommentSection extends ComponentBase
     {
         $comment = $this->validateAjaxMethod();
 
-        // Get new Vote
         if (empty($vote = input('vote')) || !in_array($vote, ['like', 'dislike'])) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
         }
 
-        // Check if Like or dislike is enabled
         if ($this->config($vote . '_comment') !== '1') {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.disabled_method'));
         }
 
-        // Check if current user can Like or Dislike
         if (!$this->page['currentUserCan' . ucfirst($vote)]) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to'));
         }
 
-        // Add Vote & Return
         if ($comment->{$vote}()) {
             return [
                 'status' => 'success',
@@ -683,17 +751,14 @@ class CommentSection extends ComponentBase
     {
         $comment = $this->validateAjaxMethod();
 
-        // Check if form is disabled
         if (!$this->page['showCommentsForm']) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.form_disabled'));
         }
 
-        // Check if current user can comment
         if (!$this->page['currentUserCanComment']) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.not_allowed_to_comment'));
         }
 
-        // Return Reply Partial and submit button text
         return [
             'status' => 'success',
             'reply' => $this->renderPartial('@_reply', [
@@ -726,7 +791,6 @@ class CommentSection extends ComponentBase
         $builder = (new \Gregwar\Captcha\CaptchaBuilder())->build();
         Session::put('blogportalCaptchaPhrase', $builder->getPhrase());
 
-        // Send new Image
         return [
             'captchaImage' => $builder->inline()
         ];
@@ -760,7 +824,7 @@ class CommentSection extends ComponentBase
             ]);
         }
 
-        // Validate Comment Captcha
+        // Validate Captcha
         if ($hasCaptcha) {
             if (strtoupper(Session::get('blogportalCaptchaPhrase')) !== strtoupper(input('comment_captcha'))) {
                 $builder = (new \Gregwar\Captcha\CaptchaBuilder())->build();
@@ -773,7 +837,7 @@ class CommentSection extends ComponentBase
             }
         }
 
-        // Validate Honeypot Field
+        // Validate Honeypot
         if ($hasHoneypot) {
             $honey = input('comment_honey');
 
@@ -796,7 +860,7 @@ class CommentSection extends ComponentBase
             throw new ValidationException(['message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.tos_not_accepted')]);
         }
 
-        // Validate Form Submission
+        // Build Comment
         $comment = new Comment([
             'status' => 'pending',
             'content' => input('comment_comment')
@@ -830,14 +894,12 @@ class CommentSection extends ComponentBase
         // Validate Comment Parent
         $parentId = input('comment_parent');
         if (!empty($parentId)) {
-            // Comment ID unknown
             if (empty($parent = Comment::where('id', $parentId)->first())) {
                 throw new ValidationException([
                     'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.parent_not_found')
                 ]);
             }
 
-            // Comment not on the same Post
             if (intval($parent->post_id) !== intval($post->id)) {
                 throw new ValidationException([
                     'message' => Lang::get('spanjaan.blogportal::lang.frontend.errors.parent_invalid')
@@ -855,13 +917,14 @@ class CommentSection extends ComponentBase
                 Session::put('blogportalCaptchaPhrase', $builder->getPhrase());
                 $this->page['captchaImage'] = $builder->inline();
             }
+
             $this->page['comments'] = $this->getComments();
             $this->page['commentsCount'] = $this->getCommentsCount();
 
             return [
                 'status' => 'success',
                 'comments' => $this->renderPartial('@default'),
-                'message' => 'Comment added successfully' // Add a success message
+                'message' => 'Comment added successfully'
             ];
         } else {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));

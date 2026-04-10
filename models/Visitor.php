@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace SpAnjaan\BlogPortal\Models;
 
 use Model;
+use Request;
+use SpAnjaan\BlogPortal\Models\Comment;
 use Winter\Blog\Models\Post;
 
 class Visitor extends Model
@@ -28,9 +30,7 @@ class Visitor extends Model
      *
      * @var array
      */
-    protected $guarded = [
-        '*'
-    ];
+    protected $guarded = [];
 
     /**
      * Fillable Model attributes
@@ -57,21 +57,61 @@ class Visitor extends Model
      *
      * @return Visitor
      */
-    public static function currentUser()
+    public static function currentUser(): self
     {
-        $user_id = hash_hmac('sha1', $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'] ?? strval(strtotime(date('Y-m-d') . ' 00:00:00')));
+        // Get real IP address (considering proxies)
+        $ip = self::getClientIp();
+        
+        // Get user agent with fallback
+        $agent = Request::header('User-Agent', 'unknown');
+        
+        // Generate unique user identifier based on IP and user agent
+        $user_id = hash_hmac('sha1', $ip, $agent);
+
         return self::firstOrCreate([
             'user' => $user_id
         ]);
+    }
+    
+    /**
+     * Get client IP address with proxy support
+     *
+     * @return string
+     */
+    protected static function getClientIp(): string
+    {
+        $ipKeys = [
+            'HTTP_CF_CONNECTING_IP',     // Cloudflare
+            'HTTP_X_FORWARDED_FOR',     // Proxy
+            'HTTP_X_REAL_IP',           // Nginx proxy
+            'HTTP_CLIENT_IP',           // Client IP
+            'REMOTE_ADDR'               // Default
+        ];
+        
+        foreach ($ipKeys as $key) {
+            $value = Request::header($key);
+            if (!empty($value)) {
+                // X-Forwarded-For can contain multiple IPs, get the first one
+                $ips = explode(',', $value);
+                $ip = trim($ips[0]);
+                
+                // Validate IP address
+                if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                    return $ip;
+                }
+            }
+        }
+        
+        return '0.0.0.0';
     }
 
     /**
      * Check if user has seen
      *
-     * @param Post|int The desired Post model or Post id to check.
+     * @param Post|int $post The desired Post model or Post id to check.
      * @return boolean
      */
-    public function hasSeen($post)
+    public function hasSeen($post): bool
     {
         if ($post instanceof Post) {
             $post = $post->id;
@@ -88,10 +128,10 @@ class Visitor extends Model
     /**
      * Mark a Post as Seen
      *
-     * @param Post|int The desired Post model or Post id to check.
+     * @param Post|int $post The desired Post model or Post id to mark.
      * @return boolean
      */
-    public function markAsSeen($post)
+    public function markAsSeen($post): bool
     {
         if ($post instanceof Post) {
             $post = $post->id;
@@ -115,16 +155,17 @@ class Visitor extends Model
      * Get Comment Vote Status
      *
      * @param Comment|int $comment
-     * @return ?string
+     * @return string|null
      */
-    public function getCommentVote($comment)
+    public function getCommentVote($comment): ?string
     {
         if ($comment instanceof Comment) {
             $comment = $comment->id;
         }
 
-        $likes = $this->getAttribute('likes');
+        $likes    = $this->getAttribute('likes');
         $dislikes = $this->getAttribute('dislikes');
+
         if (is_array($likes) && in_array($comment, $likes)) {
             return 'like';
         } elseif (is_array($dislikes) && in_array($comment, $dislikes)) {
@@ -140,7 +181,7 @@ class Visitor extends Model
      * @param Comment|int $comment
      * @return bool
      */
-    public function addCommentLike($comment)
+    public function addCommentLike($comment): bool
     {
         if ($comment instanceof Comment) {
             $comment = $comment->id;
@@ -166,7 +207,7 @@ class Visitor extends Model
      * @param Comment|int $comment
      * @return bool
      */
-    public function removeCommentLike($comment)
+    public function removeCommentLike($comment): bool
     {
         if ($comment instanceof Comment) {
             $comment = $comment->id;
@@ -180,7 +221,8 @@ class Visitor extends Model
         if (!in_array($comment, $likes)) {
             return true;
         } else {
-            $this->setAttribute('likes', array_filter($likes, fn ($val) => $val !== $comment));
+            // array_values reindexes to prevent JSON object encoding
+            $this->setAttribute('likes', array_values(array_filter($likes, fn ($val) => $val !== $comment)));
             return $this->save();
         }
     }
@@ -191,7 +233,7 @@ class Visitor extends Model
      * @param Comment|int $comment
      * @return bool
      */
-    public function addCommentDislike($comment)
+    public function addCommentDislike($comment): bool
     {
         if ($comment instanceof Comment) {
             $comment = $comment->id;
@@ -217,7 +259,7 @@ class Visitor extends Model
      * @param Comment|int $comment
      * @return bool
      */
-    public function removeCommentDislike($comment)
+    public function removeCommentDislike($comment): bool
     {
         if ($comment instanceof Comment) {
             $comment = $comment->id;
@@ -231,7 +273,8 @@ class Visitor extends Model
         if (!in_array($comment, $dislikes)) {
             return true;
         } else {
-            $this->setAttribute('dislikes', array_filter($dislikes, fn ($val) => $val !== $comment));
+            // array_values reindexes to prevent JSON object encoding
+            $this->setAttribute('dislikes', array_values(array_filter($dislikes, fn ($val) => $val !== $comment)));
             return $this->save();
         }
     }

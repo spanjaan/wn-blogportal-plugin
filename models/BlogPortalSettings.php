@@ -15,6 +15,13 @@ use System\Classes\PluginManager;
 class BlogPortalSettings extends Model
 {
     /**
+     * Settings Cache
+     *
+     * @var array
+     */
+    protected static array $cache = [];
+
+    /**
      * Default Settings
      *
      * @param string $key
@@ -23,24 +30,52 @@ class BlogPortalSettings extends Model
     public static function defaultValue($key)
     {
         return [
-            "author_favorites" => '1',
-            "like_comment" => '1',
-            "dislike_comment" => '1',
-            "restrict_to_users" => '0',
-            "guest_comments" => '1',
-            "moderate_guest_comments" => '1',
-            "moderate_user_comments" => '0',
-            "form_comment_title" => '0',
-            "form_comment_markdown" => '1',
-            "form_comment_honeypot" => '1',
-            "form_comment_captcha" => '0',
-            "form_tos_checkbox" => '0',
-            "form_tos_hide_on_user" => '1',
-            "form_tos_label" => Lang::get('spanjaan.blogportal::lang.settings.comments.form_tos_label.default'),
-            "form_tos_type" => 'cms_page',
-            "form_tos_cms_page" => '',
-            "form_tos_static_page" => '',
+            "author_favorites"          => '1',
+            "like_comment"              => '1',
+            "dislike_comment"           => '1',
+            "restrict_to_users"         => '0',
+            "guest_comments"            => '1',
+            "moderate_guest_comments"   => '1',
+            "moderate_user_comments"    => '0',
+            "form_comment_title"        => '0',
+            "form_comment_markdown"     => '1',
+            "form_comment_honeypot"     => '1',
+            "form_comment_captcha"      => '0',
+            "form_tos_checkbox"         => '0',
+            "form_tos_hide_on_user"     => '1',
+            "form_tos_label"            => Lang::get('spanjaan.blogportal::lang.settings.comments.form_tos_label.default'),
+            "form_tos_type"             => 'cms_page',
+            "form_tos_cms_page"         => '',
+            "form_tos_static_page"      => '',
         ][$key] ?? null;
+    }
+
+    /**
+     * Get cached setting value
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public static function getCached(string $key, mixed $default = null): mixed
+    {
+        $instance = self::instance();
+        
+        if (!isset(self::$cache[$key])) {
+            self::$cache[$key] = $instance->get($key, self::defaultValue($key));
+        }
+        
+        return self::$cache[$key] ?? $default;
+    }
+
+    /**
+     * Clear settings cache
+     *
+     * @return void
+     */
+    public static function clearCache(): void
+    {
+        self::$cache = [];
     }
 
     /**
@@ -112,7 +147,7 @@ class BlogPortalSettings extends Model
     }
 
     /**
-     * Buils up the Terms of Service Label
+     * Builds up the Terms of Service Label
      *
      * @return string
      */
@@ -121,12 +156,10 @@ class BlogPortalSettings extends Model
         $label = $this->get('form_tos_label') ?? self::defaultValue('form_tos_label');
         $type = $this->get('form_tos_type') ?? 'static';
 
-        // Check for [] -brackets
         if (($startSlash = strpos($label, '[')) !== false) {
             $endSlash = strpos($label, ']', $startSlash);
         }
 
-        // Replace Brackets Text
         if ($startSlash > 0 && $endSlash > 0) {
             $append = substr($label, 0, $startSlash);
             $inner = substr($label, $startSlash+1, $endSlash - $startSlash - 1);
@@ -144,7 +177,6 @@ class BlogPortalSettings extends Model
             $label = trim($append . $inner . ' ' . $prepend);
         }
 
-        // Return Label
         return $label;
     }
 }

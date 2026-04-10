@@ -126,17 +126,17 @@ return [
 
     'frontend' => [
         'comments' => [
-            'username' => 'Username',
-            'email' => 'Email',
-            'title' => 'Comment Title',
-            'comment' => 'Comment',
+            'username' => 'Your Username',
+            'email' => 'Your Mail address',
+            'title' => 'Your Comment Title',
+            'comment' => 'Your Comment',
             'comment_markdown_hint' => 'You can use the Markdown syntax to style your comment.',
             'captcha' => 'Captcha Code',
             'captcha_reload' => 'Reload Captcha',
             'captcha_placeholder' => 'Enter the code from the image',
-            'submit_comment' => 'Post Comment',
-            'cancel_reply' => 'Cancel Reply',
-            'submit_reply' => 'Reply',
+            'submit_comment' => 'Write a new Comment',
+            'cancel_reply' => 'Cancel this Reply',
+            'submit_reply' => 'Reply to this comment',
             'approve' => 'Approve',
             'approve_title' => 'Approve this comment',
             'reject' => 'Reject',
@@ -181,6 +181,7 @@ return [
             'not_allowed_to' => 'You are not allowed to call this action.',
             'moderate_permission' => 'You are not allowed to moderate comments.',
             'invalid_status' => 'The passed comment status is invalid.',
+            'unknown_status' => 'The comment status could not be updated.',
             'unknown_comment' => 'The passed comment does not exist (anymore).',
             'disabled_method' => 'This function has been disabled by the website administrator.',
             'no_permissions_for' => 'You don\'t have the permission to call this action.',
@@ -325,6 +326,13 @@ return [
             'description' => 'Manage the BlogPortal related settings.'
         ],
         
+        'blog_setting' => [
+            'tab' => 'Blog',
+            'label' => 'Richeditor Settings',
+            'rich_editor' => 'Rich Editor',
+            'rich_editor_comment' => 'Enable Richeditor in Blog post section'
+        ],
+
         'comments' => [
             'tab' => 'Comments',
             'general_section' => 'General Settings',

@@ -39,7 +39,7 @@ class PostsList extends ReportWidgetBase
                 'title'         => 'spanjaan.blogportal::lang.components.post.default_order',
                 'description'   => 'spanjaan.blogportal::lang.components.post.default_order_comment',
                 'type'          => 'dropdown',
-                'default'       => 'blog/post',
+                'default'       => 'by_published',
             ]
         ];
     }
@@ -74,9 +74,9 @@ class PostsList extends ReportWidgetBase
      *
      * @return void
      */
-    protected function loadAssets()
+      protected function loadAssets()
     {
-        $this->addCss('/plugins/spanjaan/blogportal/assets/css/widget-winter.css');
+        $this->addCss('css/post-list.css');
     }
 
     /**

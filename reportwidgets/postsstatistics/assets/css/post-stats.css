@@ -1,0 +1,237 @@
+/* ------------------------------------------------------------
+   Outer container
+   ------------------------------------------------------------ */
+
+.report-widget .posts-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ------------------------------------------------------------
+   Range filter bar
+   ------------------------------------------------------------ */
+
+.report-widget .stats-filter {
+    display: flex;
+    align-items: center;
+}
+
+.report-widget .stats-range-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.report-widget .stats-range-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.report-widget .range-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    border-radius: 5px;
+    border: 1px solid #d0cfc9;
+    background-color: #ffffff;
+    color: #5a5a57;
+    cursor: pointer;
+    white-space: nowrap;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.report-widget .range-btn:hover {
+    background-color: #f5f4f0;
+    border-color: #b0afa8;
+    color: #2c2c2a;
+}
+
+.report-widget .range-btn:focus-visible {
+    box-shadow: 0 0 0 2px rgba(83, 74, 183, 0.35);
+}
+
+.report-widget .range-btn.disabled {
+    background-color: #534ab7 !important;
+    border-color: #534ab7 !important;
+    color: #ffffff !important;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* ------------------------------------------------------------
+   Stats boxes — shared
+   ------------------------------------------------------------ */
+
+.report-widget .stats-box {
+    background-color: #fafaf8;
+    border: 1px solid #e2e1db;
+    border-radius: 6px;
+    padding: 14px 16px;
+}
+
+/* ------------------------------------------------------------
+   Published statistics box
+   ------------------------------------------------------------ */
+
+.report-widget .stats-box--published {
+    border-left: 3px solid #534ab7;
+}
+
+/* ------------------------------------------------------------
+   General statistics box
+   ------------------------------------------------------------ */
+
+.report-widget .stats-box--general {
+    border-left: 3px solid #1d9e75;
+}
+
+/* ------------------------------------------------------------
+   Stats box section title
+   ------------------------------------------------------------ */
+
+.report-widget .stats-box-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #5f5e5a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 10px 0;
+    padding: 0;
+    line-height: 1.4;
+}
+
+/* ------------------------------------------------------------
+   chart-bar (published statistics)
+   ------------------------------------------------------------ */
+
+.report-widget .control-chart.wrap-legend {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* ------------------------------------------------------------
+   chart-line (views/visitors)
+   ------------------------------------------------------------ */
+
+.report-widget [data-control="chart-line"] {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+/* ============================================================
+   DARK MODE — .dark class on ancestor (WinterCMS backend)
+   ============================================================ */
+
+.dark .report-widget .range-btn {
+    background-color: #2c2c2a;
+    border-color: #5f5e5a;
+    color: #b4b2a9;
+}
+
+.dark .report-widget .range-btn:hover {
+    background-color: #3a3a37;
+    border-color: #888780;
+    color: #d3d1c7;
+}
+
+.dark .report-widget .range-btn:focus-visible {
+    box-shadow: 0 0 0 2px rgba(127, 119, 221, 0.4);
+}
+
+.dark .report-widget .range-btn.disabled {
+    background-color: #3c3489 !important;
+    border-color: #3c3489 !important;
+    color: #cecbf6 !important;
+}
+
+.dark .report-widget .stats-box {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: #444441;
+}
+
+.dark .report-widget .stats-box--published {
+    border-left-color: #7f77dd;
+}
+
+.dark .report-widget .stats-box--general {
+    border-left-color: #1d9e75;
+}
+
+.dark .report-widget .stats-box-title {
+    color: #888780;
+}
+
+.dark .report-widget .control-chart.wrap-legend ul li {
+    color: #888780;
+}
+
+.dark .report-widget .control-chart.wrap-legend ul li span {
+    color: #d3d1c7;
+}
+
+/* ============================================================
+   DARK MODE — system preference fallback
+   ============================================================ */
+
+@media (prefers-color-scheme: dark) {
+    .report-widget .range-btn {
+        background-color: #2c2c2a;
+        border-color: #5f5e5a;
+        color: #b4b2a9;
+    }
+
+    .report-widget .range-btn:hover {
+        background-color: #3a3a37;
+        border-color: #888780;
+        color: #d3d1c7;
+    }
+
+    .report-widget .range-btn:focus-visible {
+        box-shadow: 0 0 0 2px rgba(127, 119, 221, 0.4);
+    }
+
+    .report-widget .range-btn.disabled {
+        background-color: #3c3489 !important;
+        border-color: #3c3489 !important;
+        color: #cecbf6 !important;
+    }
+
+    .report-widget .stats-box {
+        background-color: rgba(255, 255, 255, 0.03);
+        border-color: #444441;
+    }
+
+    .report-widget .stats-box--published {
+        border-left-color: #7f77dd;
+    }
+
+    .report-widget .stats-box--general {
+        border-left-color: #1d9e75;
+    }
+
+    .report-widget .stats-box-title {
+        color: #888780;
+    }
+
+    .report-widget .control-chart.wrap-legend ul li {
+        color: #888780;
+    }
+
+    .report-widget .control-chart.wrap-legend ul li span {
+        color: #d3d1c7;
+    }
+}

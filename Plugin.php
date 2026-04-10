@@ -17,8 +17,6 @@ use SpAnjaan\BlogPortal\Behaviors\BlogPortalPostModel;
 use SpAnjaan\BlogPortal\Models\Comment;
 use SpAnjaan\BlogPortal\Models\Visitor;
 use System\Classes\PluginBase;
-use Winter\Translate\FormWidgets\MLRichEditor;
-use SpAnjaan\BlogPortal\Models\BlogPortalSettings;
 
 class Plugin extends PluginBase
 {
@@ -30,7 +28,7 @@ class Plugin extends PluginBase
     public $require = [
         'Winter.Blog'
     ];
-    
+
     // Define constants for event names
     private const MENU_EVENT = 'backend.menu.extendItems';
     private const PAGE_EVENT = 'cms.page.end';
@@ -47,24 +45,11 @@ class Plugin extends PluginBase
             'description' => 'spanjaan.blogportal::lang.plugin.description',
             'author'      => 'S.p. Anjaan',
             'icon'        => 'icon-tags',
-            'homepage'    => 'https://github.com/spanjaan/blogportal'
+            'homepage'    => 'https://github.com/spanjaan/blogportal',
+            'version'     => '2.0.0'
         ];
     }
-    
-    /**
-     * Get BlogPortal Settings
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
-     */
-    protected function config(string $key)
-    {
-        if (empty($this->blogportalSettings)) {
-            $this->blogportalSettings = BlogPortalSettings::instance();
-        }
-        return $this->blogportalSettings->{$key} ?? BlogPortalSettings::defaultValue($key);
-    }
+
     /**
      * Register method, called when the plugin is first registered.
      *
@@ -72,7 +57,6 @@ class Plugin extends PluginBase
      */
     public function register()
     {
-        // Extend available sorting options
         Post::$allowedSortingOptions['spanjaan_blogportal_views asc']           = 'spanjaan.blogportal::lang.sorting.blogportal_views_asc';
         Post::$allowedSortingOptions['spanjaan_blogportal_views desc']          = 'spanjaan.blogportal::lang.sorting.blogportal_views_desc';
         Post::$allowedSortingOptions['spanjaan_blogportal_unique_views asc']    = 'spanjaan.blogportal::lang.sorting.blogportal_unique_views_asc';
@@ -91,13 +75,10 @@ class Plugin extends PluginBase
         $this->extendBackendMenu();
         $this->collectUniqueViews();
         $this->implementCustomModels();
-
-        // Add other boot-time functionality if needed
     }
 
     private function extendBackendMenu()
     {
-        // Add side menus to Winter.Blog
         Event::listen(self::MENU_EVENT, function ($manager) {
             $manager->addSideMenuItems('Winter.Blog', 'blog', [
                 'spanjaan_blogportal_tags' => [
@@ -139,7 +120,6 @@ class Plugin extends PluginBase
 
     private function collectUniqueViews()
     {
-        // Collect (Unique) Views
         Event::listen(self::PAGE_EVENT, function (Controller $ctrl) {
             $pageObject = $ctrl->getPageObject();
             if (property_exists($pageObject, 'vars')) {
@@ -181,7 +161,6 @@ class Plugin extends PluginBase
 
     private function implementCustomModels()
     {
-        // Implement custom Models for Post and BackendUser
         Post::extend(function ($model) {
             $model->implement[] = BlogPortalPostModel::class;
         });
@@ -190,14 +169,11 @@ class Plugin extends PluginBase
             $model->implement[] = BlogPortalBackendUserModel::class;
         });
 
-        // Extend Form Fields on Posts Controller
         Posts::extendFormFields(function ($form, $model, $context) {
-            // Check if the model is an instance of Post
             if (!$model instanceof Post) {
                 return;
             }
 
-            // Add Comments Field
             $form->addTabFields([
                 'spanjaan_blogportal_comment_visible' => [
                     'tab'           => 'spanjaan.blogportal::lang.model.comments.label',
@@ -220,11 +196,10 @@ class Plugin extends PluginBase
                         'private'       => 'spanjaan.blogportal::lang.model.comments.post_mode.private',
                         'closed'        => 'spanjaan.blogportal::lang.model.comments.post_mode.closed',
                     ],
-                    'permissions'       => ['spanjaan.blogportal.comments.access_comments_settings']
+                    'permissions'   => ['spanjaan.blogportal.comments.access_comments_settings']
                 ],
             ]);
 
-            // Add Tags Field
             $form->addTabFields([
                 'spanjaan_blogportal_tags' => [
                     'label'         => 'spanjaan.blogportal::lang.model.tags.label',
@@ -237,14 +212,11 @@ class Plugin extends PluginBase
             ]);
         });
 
-        // Extend List Columns on Posts Controller
         Posts::extendListColumns(function (Lists $list, $model) {
-            // Check if the model is an instance of Post
             if (!$model instanceof Post) {
                 return;
             }
 
-            // Add custom list columns
             $list->addColumns([
                 'spanjaan_blogportal_views' => [
                     'label'     => 'spanjaan.blogportal::lang.model.visitors.views',
@@ -255,9 +227,7 @@ class Plugin extends PluginBase
             ]);
         });
 
-        // Add Posts Filter Scope
         Posts::extendListFilterScopes(function ($filter) {
-            // Add custom filter scope for tags
             $filter->addScopes([
                 'spanjaan_blogportal_tags' => [
                     'label'      => 'spanjaan.blogportal::lang.model.tags.label',
@@ -268,14 +238,11 @@ class Plugin extends PluginBase
             ]);
         });
 
-        // Extend Backend Users Controller
         BackendUsers::extendFormFields(function ($form, $model, $context) {
-            // Check if the model is an instance of BackendUser
             if (!$model instanceof BackendUser) {
                 return;
             }
 
-            // Add custom form fields for BackendUser
             $form->addTabFields([
                 'spanjaan_blogportal_display_name' => [
                     'label'         => 'spanjaan.blogportal::lang.model.users.displayName',

@@ -17,12 +17,6 @@ class PostsByTag extends Posts
      */
     public $tag = null;
 
-    /**
-     * The multiple tags mode.
-     *
-     * @var ?string
-     */
-    public $tagsMode = null;
 
     /**
      * Declare Component Details
@@ -52,13 +46,6 @@ class PostsByTag extends Posts
             'default'       => '{{ :slug }}',
             'group'         => 'spanjaan.blogportal::lang.components.blogportal_group',
         ];
-        $properties['tagAllowMultiple'] = [
-            'title'         => 'spanjaan.blogportal::lang.components.tag.tag_multiple',
-            'description'   => 'spanjaan.blogportal::lang.components.tag.tag_multiple_comment',
-            'type'          => 'checkbox',
-            'default'       => '0',
-            'group'         => 'spanjaan.blogportal::lang.components.blogportal_group',
-        ];
         return $properties;
     }
 
@@ -71,16 +58,16 @@ class PostsByTag extends Posts
     {
         $this->tag = $this->loadTag();
 
-        if (is_array($this->tag)) {
-            $this->page['tags'] = $this->tag;
-        } else {
-            $this->page['tag'] = $this->tag;
-        }
-
         if (empty($this->tag)) {
             $this->setStatusCode(404);
             return $this->controller->run('404');
         }
+
+        // For sidebar active class
+        $this->page['currentTagSlug'] = $this->tag->slug ?? null;
+
+        // Pass the tag to page variable
+        $this->page['tag'] = $this->tag;
 
         return parent::onRun();
     }
@@ -92,8 +79,7 @@ class PostsByTag extends Posts
      */
     protected function listPosts()
     {
-        $tags = $this->tag;
-        $tagsMode = $this->tagsMode;
+        $tag = $this->tag;
         $category = $this->category ? $this->category->id : null;
         $categorySlug = $this->category ? $this->category->slug : null;
 
@@ -104,21 +90,15 @@ class PostsByTag extends Posts
 
         // Prepare Query
         $query = Post::with(['categories', 'featured_images', 'spanjaan_blogportal_tags']);
-        if ($tagsMode === 'and') {
-            $ids = array_map(fn ($item) => $item->id, $tags);
-
-            $query->join('spanjaan_blogportal_tags_posts', 'winter_blog_posts.id', '=', 'spanjaan_blogportal_tags_posts.post_id')
-                ->whereIn('spanjaan_blogportal_tags_posts.tag_id', array_map(fn ($item) => $item->id, $tags))
-                ->groupBy('winter_blog_posts.id')
-                ->havingRaw('count(DISTINCT "spanjaan_blogportal_tags_posts"."tag_id") = ?', [count($ids)]);
-        } else {
-            $query->whereHas('spanjaan_blogportal_tags', function ($query) use ($tags) {
-                if (is_array($tags)) {
-                    return $query->whereIn('spanjaan_blogportal_tags.id', array_map(fn ($item) => $item->id, $tags));
-                } else {
-                    return $query->where('spanjaan_blogportal_tags.id', $tags->id);
-                }
-            });
+        
+        // Filter posts by the single selected tag
+        $query->whereHas('spanjaan_blogportal_tags', function ($q) use ($tag) {
+            return $q->where('spanjaan_blogportal_tags.id', $tag->id);
+        });
+        
+        // Apply published filter
+        if ($isPublished) {
+            $query->where('published', '1');
         }
 
         // Execute query
@@ -154,31 +134,13 @@ class PostsByTag extends Posts
     /**
      * Load Tag
      *
-     * @return Tag|Tag[][]|null
+     * @return Tag|null
      */
     protected function loadTag()
     {
         if (!$slug = $this->property('tagFilter')) {
             return null;
         }
-
-        // Multiple Tag Archive
-        if ($this->property('tagAllowMultiple') === '1') {
-            //$tagsList = preg_split('/(\+|\,)/', $slug, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-
-            if (strpos($slug, '+') !== false) {
-                $this->tagsMode = 'and';
-                $tagsList = explode('+', $slug);
-            } elseif (strpos($slug, ',') !== false) {
-                $this->tagsMode = 'or';
-                $tagsList = explode(',', $slug);
-            }
-
-            if (isset($tagsList) && count($tagsList) > 1) {
-                return Tag::whereIn('slug', $tagsList)->get()->all();
-            }
-        }
-
         // Single Tag Archive
         $tag = new Tag();
 

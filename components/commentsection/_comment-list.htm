@@ -1,34 +1,54 @@
-<div class="mt-2">
-    <hr>
-    {% if commentsCount %}
-    <h2 class="mt-2"><span>{{ commentsCount }}</span> Comments</h2>
-    {% else %}
-    <div class="alert alert-info mt-2">you are a first commenter</div>
-    {% endif %}
-    
-    {% macro renderRecursive(context, items, parent = null) %}
+<div class="mt-8">
+
+    {# ── Section header ── #}
+    <div class="flex items-center mb-6">
+        {% if commentsCount %}
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-sm shadow-indigo-200 dark:shadow-indigo-900/50 flex-shrink-0">
+                <svg class="text-white" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+                <span class="text-base font-bold text-slate-800 dark:text-slate-100">{{ commentsCount }}</span>
+                <span class="text-base font-medium text-slate-400 dark:text-slate-500 ml-1">{{ commentsCount == 1 ? 'Comment' : 'Comments' }}</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="w-full flex flex-col items-center gap-3 py-14
+                    bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/40 dark:to-slate-900/20
+                    border border-dashed border-slate-200 dark:border-slate-700/60
+                    rounded-2xl text-center">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 dark:from-indigo-900/40 dark:to-violet-900/40 flex items-center justify-center">
+                <svg class="text-indigo-400 dark:text-indigo-500" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-slate-600 dark:text-slate-400">No comments yet</p>
+                <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Be the first to share your thoughts!</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ── Recursive tree renderer ── #}
+    {% macro renderRecursive(items) %}
         {% for comment in items %}
-            {% if comment.status == 'pending' %}
-            <div id="comment-{{ comment.id }}" class="card bg-danger-subtle mb-2">
-                {% partial '@_single' comment=comment %}
-            </div>
-            {% else %}
-            <div id="comment-{{ comment.id }}" class="bg-secondary mb-2 rounded">
-                {% partial '@_single' comment=comment %}
-                {% if context.showCommentsHierarchical and comment.children %}
-                <div class="position-relative ps-2">
-                    <span class="position-absolute top-0 start-0 w-1 h-100 bg-primary"></span>
-                    {{ _self.renderRecursive(context, comment.children, comment) }}
-                </div>
-                {% endif %}
-            </div>
+        <div id="comment-{{ comment.id }}" class="mb-3">
+            {% partial '@_single' comment=comment %}
+
+            {% if comment.children %}
+                {{ _self.renderRecursive(comment.children) }}
             {% endif %}
+        </div>
         {% endfor %}
     {% endmacro %}
 
-    {{ _self.renderRecursive(_context, comments) }}
-
-    {% if comments.lastPage > 1 %}
-        {% partial '@_pagination' pagination=comments %}
+    {# ── Tree root ── #}
+    {% if commentsCount %}
+    <div class="space-y-1">
+        {{ _self.renderRecursive(comments.getCollection) }}
+    </div>
     {% endif %}
+
+    {# ── Pagination ── #}
+    {% partial '@_pagination' pagination=comments %}
+
 </div>
