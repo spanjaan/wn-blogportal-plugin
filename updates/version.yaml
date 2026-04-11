@@ -37,4 +37,6 @@
     - 'Added database indexes for all major tables'
 2.0.1:
     - 'Fixed minor bugs in components'
-
+2.0.2:
+    - 'Bug fixes and performance improvements in comment handling'
+    - 'Code cleanup and optimization in all components'
