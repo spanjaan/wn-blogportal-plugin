@@ -1,15 +1,22 @@
-<ul class="comment-list list-unstyled">
+<ul class="space-y-6">
     {% for comment in comments %}
-        <li class="d-flex flex-column">
-            <h3>
-                {{ comment.display_name }} {% if comment.parent %}replied{% else %}commented{% endif %} on <a href="{{ comment.post.url }}">{{ comment.post.title }}</a>
+        <li class="flex flex-col">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                {{ comment.display_name }} 
+                {% if comment.parent %}
+                    <span class="text-gray-500 dark:text-gray-400">replied</span>
+                {% else %}
+                    <span class="text-gray-500 dark:text-gray-400">commented</span>
+                {% endif %} 
+                <span class="text-gray-500 dark:text-gray-400">on</span> 
+                <a href="{{ comment.post.url }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ comment.post.title }}</a>
             </h3>
-            <p class="info">
-                On <time datetime="{{ comment.created_at }}">{{ comment.created_at | date('M d, Y') }}</time>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                On <time datetime="{{ comment.created_at }}" class="font-medium">{{ comment.created_at | date('M d, Y') }}</time>
             </p>
-            <p class="excerpt">{{ comment.content | raw }}</p>
+            <p class="text-gray-700 dark:text-gray-300 mt-2 leading-relaxed">{{ comment.content | raw }}</p>
         </li>
     {% else %}
-        <li class="no-data">{{ __SELF__.noPostsMessage }}</li>
+        <li class="text-gray-500 dark:text-gray-400 italic py-4">{{ __SELF__.noPostsMessage }}</li>
     {% endfor %}
 </ul>

@@ -1,9 +1,14 @@
-<h5>Blog Archive</h5>
-<div class="list-group">
-    {% for link in archiveLinks %}
-        <a href="{{ link.url }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-            {{ link.monthName }} {{ link.year }}
-            <span class="badge rounded-pill bg-success">{{ link.count }}</span>
-        </a>
-    {% endfor %}
-</div>
+{% if __SELF__.archiveLinks|length > 0 %}
+    <div class="flex flex-col space-y-2">
+        {% for link in archiveLinks %}
+            <a href="{{ link.url }}" class="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 group">
+                <span class="text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100">{{ link.monthName }} {{ link.year }}</span>
+                <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">{{ link.count }}</span>
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+        <p class="text-gray-500 dark:text-gray-400 italic">No archive links found.</p>
+    </div>
+{% endif %}
