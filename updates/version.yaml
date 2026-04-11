@@ -35,4 +35,6 @@
     - 'Added time interval constants in Comment model'
     - 'Removed deprecated getRenderContentAttribute method'
     - 'Added database indexes for all major tables'
+2.0.1:
+    - 'Fixed minor bugs in components'
 
