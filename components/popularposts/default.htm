@@ -1,7 +1,7 @@
 {% set posts = __SELF__.posts %}
 
 <div class="relative">
-    {# Header #}
+
     <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
             <div class="relative">
@@ -20,14 +20,13 @@
         </div>
     </div>
 
-    {# Posts Grid #}
-    <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 list-none p-0 m-0">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 list-none p-0 m-0">
         {% for post in posts %}
             {% partial '@_post-card.htm' post=post %}
         {% else %}
             {% partial '@_empty-state.htm' noPostsMessage=__SELF__.noPostsMessage %}
         {% endfor %}
-    </ul>
+    </div>
 
     <div class="mt-8">
         {% partial '@_pagination.htm' %}

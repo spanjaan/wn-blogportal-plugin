@@ -249,7 +249,7 @@ class CommentSection extends ComponentBase
 
         $baseQuery = $this->buildBaseQuery();
 
-        // Get root comment IDs and count in a single optimized query
+        // Get root comment IDs for the current page
         $rootIds = $baseQuery
             ->whereNull('parent_id')
             ->orderByDesc('favorite')
@@ -259,11 +259,10 @@ class CommentSection extends ComponentBase
             ->pluck('id')
             ->toArray();
 
-        // Get total count separately (no need to clone entire query structure)
+        // Get total root comment count (re-apply permission filter, no dead $baseQuery closure)
         $totalRoots = Comment::where('post_id', $this->post->id)
             ->whereNull('parent_id')
-            ->where(function ($q) use ($baseQuery) {
-                // Re-apply permission filter
+            ->where(function ($q) {
                 if ($this->page['currentUserCanModerate']) {
                     $q->whereIn('status', ['approved', 'pending']);
                 } else {
@@ -288,10 +287,10 @@ class CommentSection extends ComponentBase
             );
         }
 
-        // Collect all descendant IDs in a single query using closure
-        $allIds = $rootIds;
+        // Collect all descendant IDs level by level
+        $allIds    = $rootIds;
         $parentIds = $rootIds;
-        
+
         while (!empty($parentIds)) {
             $childIds = Comment::whereIn('parent_id', $parentIds)
                 ->where('post_id', $this->post->id)
@@ -309,16 +308,17 @@ class CommentSection extends ComponentBase
                 break;
             }
 
-            $allIds = array_merge($allIds, $childIds);
+            $allIds    = array_merge($allIds, $childIds);
             $parentIds = $childIds;
         }
 
-        // Get nested comments
-        $nested = Comment::whereIn('id', $allIds)
+        // Fetch flat list then nest into tree
+        $flat = Comment::whereIn('id', $allIds)
             ->orderByDesc('favorite')
             ->orderBy('created_at', 'asc')
-            ->get()
-            ->toNested();
+            ->get();
+
+        $nested = $this->nestComments($flat);
 
         $pageName = $this->getPage()->getBaseFileName();
         return new LengthAwarePaginator(
@@ -332,6 +332,32 @@ class CommentSection extends ComponentBase
                 'pageName' => 'cpage'
             ]
         );
+    }
+
+    /**
+     * Build a nested collection from a flat collection of comments.
+     *
+     * Assigns a `children` property on each Comment model containing its
+     * direct replies, recursively. Uses a null-safe int cast so that
+     * DB drivers returning parent_id as a string still compare correctly.
+     *
+     * @param  \Illuminate\Support\Collection $flat
+     * @param  int|null                        $parentId
+     * @return \Illuminate\Support\Collection
+     */
+    protected function nestComments(\Illuminate\Support\Collection $flat, ?int $parentId = null): \Illuminate\Support\Collection
+    {
+        return $flat
+            ->filter(function ($c) use ($parentId) {
+                if ($parentId === null) {
+                    return $c->parent_id === null;
+                }
+                return (int) $c->parent_id === $parentId;
+            })
+            ->values()
+            ->each(function ($comment) use ($flat) {
+                $comment->children = $this->nestComments($flat, (int) $comment->id);
+            });
     }
 
     /**
@@ -534,7 +560,7 @@ class CommentSection extends ComponentBase
 
         // Validation fields
         $this->page['validationTime'] = time();
-        
+
         // Calculate salt value: 0=none, 5=honeypot, 10=captcha, 15=both
         $saltValue = ($hasCaptcha ? 10 : 0) + ($hasHoneypot ? 5 : 0);
         $this->page['validationHash'] = hash_hmac(
@@ -587,8 +613,8 @@ class CommentSection extends ComponentBase
         $saltNone     = '0';
         $saltHoneypot = '5';
         $saltCaptcha  = '10';
-        $saltBoth    = '15';
-        
+        $saltBoth     = '15';
+
         if (hash_equals(hash_hmac('SHA256', $time, $saltNone), $code)) {
             return true;
         }
