@@ -125,7 +125,11 @@ class PostsByDate extends Posts
         }
     }
 
-
+    /**
+     * List Posts by Date
+     *
+     * @return mixed
+     */
     protected function listPosts()
     {
         $date = $this->date;

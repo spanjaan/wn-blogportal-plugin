@@ -12,108 +12,72 @@ class Tag extends Model
 {
     use \Winter\Storm\Database\Traits\Validation;
 
+    /** @var string */
     public $implement = ['@Winter.Translate.Behaviors.TranslatableModel'];
 
-    /**
-     * Table associated with this Model
-     *
-     * @var string
-     */
+    /** @var string */
     public $table = 'spanjaan_blogportal_tags';
 
-    /**
-     * Enable Modal Timestamps
-     *
-     * @var boolean
-     */
+    /** @var bool */
     public $timestamps = true;
 
-    /**
-     * Guarded Model attributes
-     *
-     * @var array
-     */
-    protected $guarded = [
-        '*'
-    ];
+    /** @var array<string> */
+    protected $guarded = ['*'];
 
-    /**
-     * Fillable Model attributes
-     *
-     * @var array
-     */
+    /** @var array<string> */
     protected $fillable = [
-        "slug",
-        "title",
-        "description",
-        "promote",
-        "color"
+        'slug',
+        'title',
+        'description',
+        'promote',
+        'color',
     ];
 
-    /**
-     * Default values for model fields
-     *
-     * @var array
-     */
+    /** @var array<string, mixed> */
     public $attributes = [
-        'color' => '#007bff'
+        'color' => '#007bff',
     ];
 
-    /**
-     * Model Validation Rules
-     *
-     * @var array
-     */
+    /** @var array<string, mixed> */
     public $rules = [
         'slug'  => 'required|between:3,64|unique:spanjaan_blogportal_tags',
         'title' => 'required|unique:spanjaan_blogportal_tags',
     ];
 
-    /**
-     * @var array Attributes that support translation, if available.
-     */
+    /** @var array<string> */
     public $translatable = [
         'title',
         'description',
         ['slug', 'index' => true],
     ];
 
-    /**
-     * Mutable Date Attributes
-     *
-     * @var array
-     */
+    /** @var array<string> */
     protected $dates = [
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
-    /**
-     * BelongsToMany Relationships
-     *
-     * @var array
-     */
+    /** @var array<string, array<string, mixed>> */
     public $belongsToMany = [
         'posts' => [
             'Winter\Blog\Models\Post',
             'table' => 'spanjaan_blogportal_tags_posts',
-            'order' => 'published_at desc'
+            'order' => 'published_at desc',
         ],
         'posts_count' => [
             'Winter\Blog\Models\Post',
             'table' => 'spanjaan_blogportal_tags_posts',
             'scope' => 'isPublished',
-            'count' => true
-        ]
+            'count' => true,
+        ],
     ];
 
     /**
-     * Hook - Before Model is saved
-     * Only auto-generate slug from title if slug is not already set manually.
+     * Before Save Event Handler
      *
      * @return void
      */
-    public function beforeSave()
+    public function beforeSave(): void
     {
         if ($this->isDirty('title') && empty($this->slug)) {
             $this->slug = Str::slug($this->title);
@@ -121,11 +85,11 @@ class Tag extends Model
     }
 
     /**
-     * Sets the "url" attribute with a URL to this object.
+     * Set URL for Tag
      *
      * @param string $pageName
      * @param Controller $controller
-     * @param array $params Override request URL parameters
+     * @param array $params
      * @return string
      */
     public function setUrl(string $pageName, Controller $controller, array $params = []): string
@@ -139,7 +103,7 @@ class Tag extends Model
     }
 
     /**
-     * Get Posts Count Value
+     * Get Post Count Attribute
      *
      * @return int
      */

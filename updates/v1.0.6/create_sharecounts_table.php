@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Updates;
 
-use Winter\Storm\Support\Facades\Schema;
-use Winter\Storm\Database\Schema\Blueprint;
-use Winter\Storm\Database\Updates\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use System\Classes\PluginManager;
+use Winter\Storm\Database\Updates\Migration;
+use Winter\Storm\Support\Facades\Schema;
 
 class CreateShareCountsTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
-        // Check if Winter.Blog plugin is available
         if (!PluginManager::instance()->hasPlugin('Winter.Blog')) {
             return;
         }
 
         Schema::create('spanjaan_blogportal_sharecounts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('post_id')->index();  // Keep the same data type but no foreign key constraint
+            $table->unsignedBigInteger('post_id')->index();
             $table->integer('facebook')->default(0);
             $table->integer('twitter')->default(0);
             $table->integer('linkedin')->default(0);
@@ -29,7 +28,7 @@ class CreateShareCountsTable extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('spanjaan_blogportal_sharecounts');
     }

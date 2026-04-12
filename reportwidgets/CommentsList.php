@@ -4,249 +4,255 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\ReportWidgets;
 
-use ValidationException;
 use BackendAuth;
-use Lang;
 use Backend\Classes\ReportWidgetBase;
 use Cms\Classes\Controller;
 use Cms\Classes\Page;
 use Cms\Classes\Theme;
-use SpAnjaan\BlogPortal\Models\Comment;
 use Flash;
+use Lang;
+use SpAnjaan\BlogPortal\Models\Comment;
+use ValidationException;
 
 class CommentsList extends ReportWidgetBase
 {
-    /**
-     * Initialize the widget, called by the constructor and free from its parameters.
-     *
-     * @return void
-     */
-    public function init() {}
+    /** @var bool */
+    protected $widgetAssetsLoaded = false;
 
     /**
-     * Initialize the properties of this widget.
+     * Initialize Widget
      *
      * @return void
      */
-    public function defineProperties()
+    public function init(): void
+    {
+        $this->loadAssets();
+    }
+
+    /**
+     * Define Widget Properties
+     *
+     * @return array
+     */
+    public function defineProperties(): array
     {
         return [
             'postPage' => [
-                'title'         => 'winter.blog::lang.settings.posts_post',
-                'description'   => 'winter.blog::lang.settings.posts_post_description',
-                'type'          => 'dropdown',
-                'default'       => 'blog/post',
+                'title'       => 'winter.blog::lang.settings.posts_post',
+                'description' => 'winter.blog::lang.settings.posts_post_description',
+                'type'        => 'dropdown',
+                'default'     => 'blog/post',
             ],
             'defaultTab' => [
-                'title'         => 'spanjaan.blogportal::lang.components.comments_list.default_tab',
-                'description'   => 'spanjaan.blogportal::lang.components.comments_list.default_tab_comment',
-                'type'          => 'dropdown',
-                'options'       => [
-                    'pending'   => Lang::get('spanjaan.blogportal::lang.model.comments.statusPending'),
-                    'approved'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusApproved'),
-                    'rejected'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusRejected'),
-                    'spam'      => Lang::get('spanjaan.blogportal::lang.model.comments.statusSpam')
-                ]
+                'title'       => 'spanjaan.blogportal::lang.components.comments_list.default_tab',
+                'description' => 'spanjaan.blogportal::lang.components.comments_list.default_tab_comment',
+                'type'        => 'dropdown',
+                'options'     => [
+                    'pending'  => Lang::get('spanjaan.blogportal::lang.model.comments.statusPending'),
+                    'approved' => Lang::get('spanjaan.blogportal::lang.model.comments.statusApproved'),
+                    'rejected' => Lang::get('spanjaan.blogportal::lang.model.comments.statusRejected'),
+                    'spam'     => Lang::get('spanjaan.blogportal::lang.model.comments.statusSpam'),
+                ],
             ],
         ];
     }
 
     /**
-     * Get Post Page Dropdown Options
+     * Get Post Page Options
      *
-     * @return mixed
+     * @return array
      */
-    public function getPostPageOptions()
+    public function getPostPageOptions(): array
     {
         return Page::sortBy('baseFileName')->lists('baseFileName', 'baseFileName');
     }
 
     /**
-     * Adds widget specific asset files. Use $this->addJs() and $this->addCss()
-     * to register new assets to include on the page.
+     * Load Widget Assets
      *
      * @return void
      */
-    protected function loadAssets()
+    protected function loadAssets(): void
     {
+        if ($this->widgetAssetsLoaded) {
+            return;
+        }
+
         $this->addCss('css/comment-list.css');
+        $this->widgetAssetsLoaded = true;
     }
 
     /**
-     * Renders the widget's primary contents.
+     * Render Widget
      *
-     * @return string HTML markup supplied by this widget.
+     * @return string
      */
-    public function render()
+    public function render(): string
     {
         $defaultTab = $this->property('defaultTab', 'pending');
-        if (!in_array($defaultTab, ['pending', 'approved', 'rejected', 'spam'])) {
+        if (!in_array($defaultTab, ['pending', 'approved', 'rejected', 'spam'], true)) {
             $defaultTab = 'pending';
         }
 
         $comments = Comment::where('status', $defaultTab)->orderBy('created_at', 'DESC')->get();
-        if ($comments->count() === 0) {
-            $comment = null;
-        } else {
+
+        $comment = null;
+        if ($comments->count() > 0) {
             if (!empty($postPage = $this->property('postPage'))) {
-                $comments->each(fn($item) => $item->post->setUrl($postPage, new Controller(Theme::getActiveTheme())));
+                $controller = new Controller(Theme::getActiveTheme());
+                $comments->each(function ($item) use ($postPage, $controller) {
+                    $item->post->setUrl($postPage, $controller);
+                });
             }
             $comment = $comments->shift();
         }
 
         return $this->makePartial('widget', [
-            'status' => $defaultTab,
-            'counts' => [
-                'pending' => Comment::where('status', 'pending')->count(),
+            'status'          => $defaultTab,
+            'counts'          => [
+                'pending'  => Comment::where('status', 'pending')->count(),
                 'approved' => Comment::where('status', 'approved')->count(),
                 'rejected' => Comment::where('status', 'rejected')->count(),
-                'spam' => Comment::where('status', 'spam')->count(),
+                'spam'     => Comment::where('status', 'spam')->count(),
             ],
-
-            'comment' => $comment,
-            'commentPartial' => $this->makePartial('comment', [
-                'comment' => $comment
+            'comment'         => $comment,
+            'commentPartial'  => $this->makePartial('comment', [
+                'comment' => $comment,
             ]),
-
-            'list' => $comments,
-            'listPartial' => $this->makePartial('list', [
-                'list' => $comments
-            ])
+            'list'            => $comments,
+            'listPartial'    => $this->makePartial('list', [
+                'list' => $comments,
+            ]),
         ]);
     }
 
     /**
-     * AJAX Handler - Change Comments List Tab
+     * Change Tab AJAX Handler
      *
      * @return array
      */
-    public function onChangeTab()
+    public function onChangeTab(): array
     {
         $tab = input('tab');
-        if (!in_array($tab, ['pending', 'approved', 'rejected', 'spam'])) {
+        if (!in_array($tab, ['pending', 'approved', 'rejected', 'spam'], true)) {
             $tab = 'pending';
         }
 
-        // Load Comments
         $comments = Comment::where('status', $tab)->orderBy('created_at', 'DESC')->get();
-        if ($comments->count() === 0) {
-            $comment = null;
-        } else {
+
+        $comment = null;
+        if ($comments->count() > 0) {
             if (!empty($postPage = $this->property('postPage'))) {
-                $comments->each(fn($item) => $item->post->setUrl($postPage, new Controller(Theme::getActiveTheme())));
+                $controller = new Controller(Theme::getActiveTheme());
+                $comments->each(function ($item) use ($postPage, $controller) {
+                    $item->post->setUrl($postPage, $controller);
+                });
             }
             $comment = $comments->shift();
         }
 
-        // Return Response
         return [
-            'tab' => $tab,
+            'tab'             => $tab,
             '#commentPartial' => $this->makePartial('comment', [
-                'comment' => $comment
+                'comment' => $comment,
             ]),
-            '#listPartial' => $this->makePartial('list', [
-                'list' => $comments
-            ])
+            '#listPartial'    => $this->makePartial('list', [
+                'list' => $comments,
+            ]),
         ];
     }
 
     /**
-     * AJAX Handler - Change Focused Comment
+     * Change Comment AJAX Handler
      *
      * @return array
      */
-    public function onChangeComment()
+    public function onChangeComment(): array
     {
         $commentId = intval(input('comment_id'));
 
-        // Load Single Comment
         $comment = Comment::where('id', $commentId)->first();
-        if ($comment) {
-            if (!empty($postPage = $this->property('postPage'))) {
-                $comment->post->setUrl($postPage, new Controller(Theme::getActiveTheme()));
-            }
+        if ($comment && !empty($postPage = $this->property('postPage'))) {
+            $comment->post->setUrl($postPage, new Controller(Theme::getActiveTheme()));
         }
 
-        // Load Comments
         $comments = Comment::where('status', empty($comment) ? 'unknown' : $comment->status)
             ->where('id', '!=', $commentId)
             ->orderBy('created_at', 'DESC')
             ->get();
 
-        // Return Response
         return [
             '#commentPartial' => $this->makePartial('comment', [
-                'comment' => $comment
+                'comment' => $comment,
             ]),
-            '#listPartial' => $this->makePartial('list', [
-                'list' => $comments
-            ])
+            '#listPartial'    => $this->makePartial('list', [
+                'list' => $comments,
+            ]),
         ];
     }
 
     /**
-     * AJAX Handler - Change Comment Status
+     * Change Status AJAX Handler
      *
      * @return array
      */
-    public function onChangeStatus()
+    public function onChangeStatus(): array
     {
         $status = input('status');
-        $comment_id = input('comment_id');
+        $commentId = input('comment_id');
         $currentTab = input('tab', 'pending');
-        if (!in_array($currentTab, ['pending', 'approved', 'rejected', 'spam'])) {
+
+        if (!in_array($currentTab, ['pending', 'approved', 'rejected', 'spam'], true)) {
             $currentTab = 'pending';
         }
 
-        // Check if user has Permission
         if (!(BackendAuth::check() && BackendAuth::getUser()->hasPermission('spanjaan.blogportal.comments.moderate_comments'))) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.moderate_permission'));
         }
 
-        // Validate Status
-        if (!in_array($status, ['approve', 'reject', 'spam'])) {
+        if (!in_array($status, ['approve', 'reject', 'spam'], true)) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.invalid_status'));
         }
 
-        // Validate Comment ID
-        if (empty($comment = Comment::where('id', $comment_id)->first())) {
+        $comment = Comment::where('id', $commentId)->first();
+        if (empty($comment)) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_status'));
         }
 
-        // Update Status
-        if (($status = $comment->{$status}()) === false) {
+        $result = $comment->{$status}();
+        if ($result === false) {
             throw new ValidationException(Lang::get('spanjaan.blogportal::lang.frontend.errors.unknown_error'));
         }
 
-        // Rebuild Comments List
         $comments = Comment::where('status', $currentTab)->orderBy('created_at', 'DESC')->get();
-        if ($comments->count() === 0) {
-            $comment = null;
-        } else {
+
+        $comment = null;
+        if ($comments->count() > 0) {
             if (!empty($postPage = $this->property('postPage'))) {
-                $comments->each(fn($item) => $item->post->setUrl($postPage, new Controller(Theme::getActiveTheme())));
+                $controller = new Controller(Theme::getActiveTheme());
+                $comments->each(function ($item) use ($postPage, $controller) {
+                    $item->post->setUrl($postPage, $controller);
+                });
             }
             $comment = $comments->shift();
         }
 
-        // Return Response with Flash Message
         Flash::success(Lang::get('spanjaan.blogportal::lang.frontend.success.update_status'));
 
-        // Return Response
         return [
-            'status' => Lang::get('spanjaan.blogportal::lang.frontend.success.update_status'),
-            'counts' => [
-                'pending' => Comment::where('status', 'pending')->count(),
+            'status'          => Lang::get('spanjaan.blogportal::lang.frontend.success.update_status'),
+            'counts'          => [
+                'pending'  => Comment::where('status', 'pending')->count(),
                 'approved' => Comment::where('status', 'approved')->count(),
                 'rejected' => Comment::where('status', 'rejected')->count(),
-                'spam' => Comment::where('status', 'spam')->count(),
+                'spam'     => Comment::where('status', 'spam')->count(),
             ],
             '#commentPartial' => $this->makePartial('comment', [
-                'comment' => $comment
+                'comment' => $comment,
             ]),
-            '#listPartial' => $this->makePartial('list', [
-                'list' => $comments
-            ])
+            '#listPartial'    => $this->makePartial('list', [
+                'list' => $comments,
+            ]),
         ];
     }
 }

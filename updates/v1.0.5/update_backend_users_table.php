@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Updates;
 
-use Winter\Storm\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Winter\Storm\Database\Updates\Migration;
-use System\Classes\PluginManager;
+use Winter\Storm\Support\Facades\Schema;
 
-/**
- * UpdateBackendUsers Migration
- */
 class UpdateBackendUsersTable extends Migration
 {
-    /**
-     * @inheritDoc
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('backend_users', function (Blueprint $table) {
             $table->string('spanjaan_blogportal_display_name', 128)->nullable();
@@ -26,13 +19,13 @@ class UpdateBackendUsersTable extends Migration
         });
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function down()
+    public function down(): void
     {
         if (method_exists(Schema::class, 'dropColumns')) {
-            Schema::dropColumns('backend_users', ['spanjaan_blogportal_display_name', 'spanjaan_blogportal_author_slug']);
+            Schema::dropColumns('backend_users', [
+                'spanjaan_blogportal_display_name',
+                'spanjaan_blogportal_author_slug',
+            ]);
         } else {
             Schema::table('backend_users', function (Blueprint $table) {
                 if (Schema::hasColumn('backend_users', 'spanjaan_blogportal_display_name')) {

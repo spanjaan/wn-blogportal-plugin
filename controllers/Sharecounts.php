@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 declare(strict_types=1);
 
@@ -10,16 +10,18 @@ use SpAnjaan\BlogPortal\Models\Sharecount;
 
 class Sharecounts extends Controller
 {
-    // Implementing ListController behaviors
+    /** @var array<string> */
     public $implement = [
         \Backend\Behaviors\ListController::class,
     ];
 
-    // Configuration files for List controllers
+    /** @var string */
     public $listConfig = 'config_list.yaml';
-    
+
     /**
-     * Constructor to set up the controller's context in the backend menu.
+     * Constructor
+     *
+     * @return void
      */
     public function __construct()
     {
@@ -28,48 +30,25 @@ class Sharecounts extends Controller
     }
 
     /**
-     * Get the total share count or individual platform share count.
+     * Get Share Count Statistics
      *
-     * @param string $part The part of the share count to retrieve.
-     * @return int The sum of share counts based on the provided part.
+     * @param string $part
+     * @return int
      */
-    public static function getShareCount($part)
+    public static function getShareCount(string $part): int
     {
         $sharecount = Sharecount::query();
 
-        switch ($part) {
-            case 'all_count':
-                // Sum share counts across all platforms
-                return $sharecount->sum('facebook') +
-                       $sharecount->sum('twitter') +
-                       $sharecount->sum('whatsapp') +
-                       $sharecount->sum('linkedin');
-                break;
-
-            case 'facebook_count':
-                // Return Facebook share count
-                return $sharecount->sum('facebook');
-                break;
-
-            case 'twitter_count':
-                // Return Twitter share count
-                return $sharecount->sum('twitter');
-                break;
-
-            case 'whatsapp_count':
-                // Return WhatsApp share count
-                return $sharecount->sum('whatsapp');
-                break;
-
-            case 'linkedin_count':
-                // Return LinkedIn share count
-                return $sharecount->sum('linkedin');
-                break;
-
-            default:
-                // Default to returning 0 if no valid part is provided
-                return 0;
-                break;
-        }
+        return match ($part) {
+            'all_count'      => (int) ($sharecount->sum('facebook')
+                                + $sharecount->sum('twitter')
+                                + $sharecount->sum('whatsapp')
+                                + $sharecount->sum('linkedin')),
+            'facebook_count' => (int) $sharecount->sum('facebook'),
+            'twitter_count'  => (int) $sharecount->sum('twitter'),
+            'whatsapp_count' => (int) $sharecount->sum('whatsapp'),
+            'linkedin_count' => (int) $sharecount->sum('linkedin'),
+            default          => 0,
+        };
     }
 }

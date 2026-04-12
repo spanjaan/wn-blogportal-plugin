@@ -161,10 +161,13 @@ class CommentList extends ComponentBase
         // Hide on Dislike
         if (($value = $this->property('hideOnDislikes')) !== '0') {
             if (strpos($value, ':') === 0 && is_numeric(substr($value, 1))) {
-                $val = substr($value, 1);
-                $query->whereRaw("(dislikes == 0 OR dislikes / likes < $val)");
+                $val = floatval(substr($value, 1));
+                $query->where(function ($q) use ($val) {
+                    $q->where('dislikes', 0)
+                      ->orWhereRaw('dislikes / NULLIF(likes, 0) < ?', [$val]);
+                });
             } else {
-                $query->where('dislikes', '<', $value);
+                $query->where('dislikes', '<', intval($value));
             }
         }
 

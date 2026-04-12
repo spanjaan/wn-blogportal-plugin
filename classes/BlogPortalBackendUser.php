@@ -10,17 +10,14 @@ use Winter\Blog\Models\Post;
 
 class BlogPortalBackendUser
 {
-    /**
-     * User Model
-     *
-     * @var User
-     */
+    /** @var User */
     protected User $model;
 
     /**
-     * Create a new BlogPost
+     * Constructor
      *
      * @param User $model
+     * @return void
      */
     public function __construct(User $model)
     {
@@ -28,11 +25,11 @@ class BlogPortalBackendUser
     }
 
     /**
-     * Call Dynamic Property Method
+     * Magic Method Caller
      *
      * @param string $method
-     * @param ?array $arguments
-     * @return void
+     * @param array $arguments
+     * @return mixed
      */
     public function __call($method, $arguments = [])
     {
@@ -40,13 +37,13 @@ class BlogPortalBackendUser
 
         if (method_exists($this, $methodName)) {
             return $this->{$methodName}(...$arguments);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
-     * Get current CMS Controller
+     * Get Controller Instance
      *
      * @return Controller|null
      */
@@ -56,46 +53,45 @@ class BlogPortalBackendUser
     }
 
     /**
-     * Return Author Archive Page URL
+     * Get User Profile URL
      *
      * @return string|null
      */
-    public function getUrl()
+    public function getUrl(): ?string
     {
         $ctrl = $this->getController();
         if ($ctrl instanceof Controller) {
             $authorPage = 'blog/author';
-    
+
             return $ctrl->pageUrl($authorPage, [
                 'id'   => $this->model->id,
                 'slug' => $this->getSlug(),
             ]);
-        } else {
-            return null;
         }
+
+        return null;
     }
-    
 
     /**
-     * Return Author Slug
+     * Get Author Slug
      *
      * @return string
      */
-    public function getSlug()
+    public function getSlug(): string
     {
         if (empty($this->model->spanjaan_blogportal_author_slug)) {
             return $this->model->login;
-        } else {
-            return $this->model->spanjaan_blogportal_author_slug;
         }
+
+        return $this->model->spanjaan_blogportal_author_slug;
     }
 
     /**
-     * Return Author Display Name
+     * Get Display Name
      *
      * @return string
      */
-    public function getDisplayName()
+    public function getDisplayName(): string
     {
         if (!empty($this->model->spanjaan_blogportal_display_name)) {
             return $this->model->spanjaan_blogportal_display_name;
@@ -112,41 +108,41 @@ class BlogPortalBackendUser
     }
 
     /**
-     * Return Author Display Name (alias)
+     * Get Display Name (Alias)
      *
      * @return string
      */
-    public function getDisplay()
+    public function getDisplay(): string
     {
         return $this->getDisplayName();
     }
 
     /**
-     * Return Author About Me Text
+     * Get About Me Text
      *
      * @return string
      */
-    public function getAboutMe()
+    public function getAboutMe(): string
     {
-        return $this->model->spanjaan_blogportal_about_me;
+        return $this->model->spanjaan_blogportal_about_me ?? '';
     }
 
     /**
-     * Return Author About Me Text (alias)
+     * Get About Me Text (Alias)
      *
      * @return string
      */
-    public function getAbout()
+    public function getAbout(): string
     {
         return $this->getAboutMe();
     }
 
     /**
-     * Return Author Post Count
+     * Get Posts Count
      *
-     * @return string
+     * @return int
      */
-    public function getCount()
+    public function getCount(): int
     {
         return Post::where('user_id', $this->model->id)->count();
     }

@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SpAnjaan\BlogPortal\Updates;
 
-use Winter\Storm\Support\Facades\Schema;
-use Winter\Storm\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\Blueprint;
 use Winter\Storm\Database\Updates\Migration;
+use Winter\Storm\Support\Facades\Schema;
 
 class AddIndexesToShareCountsAndVisitorsTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::table('spanjaan_blogportal_sharecounts', function (Blueprint $table) {
             $table->index('post_id', 'idx_sharecounts_post_id');
@@ -29,7 +31,7 @@ class AddIndexesToShareCountsAndVisitorsTable extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::table('spanjaan_blogportal_sharecounts', function (Blueprint $table) {
             $table->dropIndex('idx_sharecounts_post_id');

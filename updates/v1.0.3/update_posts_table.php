@@ -4,20 +4,14 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Updates;
 
-use Winter\Storm\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
-use Winter\Storm\Database\Updates\Migration;
 use System\Classes\PluginManager;
+use Winter\Storm\Database\Updates\Migration;
+use Winter\Storm\Support\Facades\Schema;
 
-/**
- * CreateViewsTable Migration
- */
 class CreateViewsTable extends Migration
 {
-    /**
-     * @inheritDoc
-     */
-    public function up()
+    public function up(): void
     {
         if (!PluginManager::instance()->hasPlugin('Winter.Blog')) {
             return;
@@ -29,13 +23,13 @@ class CreateViewsTable extends Migration
         });
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function down()
+    public function down(): void
     {
         if (method_exists(Schema::class, 'dropColumns')) {
-            Schema::dropColumns('winter_blog_posts', ['spanjaan_blogportal_views', 'spanjaan_blogportal_unique_views']);
+            Schema::dropColumns('winter_blog_posts', [
+                'spanjaan_blogportal_views',
+                'spanjaan_blogportal_unique_views',
+            ]);
         } else {
             Schema::table('winter_blog_posts', function (Blueprint $table) {
                 if (Schema::hasColumn('winter_blog_posts', 'spanjaan_blogportal_views')) {

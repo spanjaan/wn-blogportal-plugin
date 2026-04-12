@@ -4,48 +4,37 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Models;
 
+use Log;
 use Model;
 use Request;
-use SpAnjaan\BlogPortal\Models\Comment;
-use Winter\Blog\Models\Post;
+use Session;
 
 class Visitor extends Model
 {
-    /**
-     * Table associated with this Model
-     *
-     * @var string
-     */
+    public const CLOUDLARE_SOLUTION_HEADER = 'HTTP_CF_VISITOR';
+    public const CLOUDLARE_RAY_HEADER = 'HTTP_CF_RAY';
+    public const CLOUDLARE_REAL_IP_HEADER = 'HTTP_CF_CONNECTING_IP';
+    public const MAX_POSTS_ARRAY_SIZE = 10000;
+    public const MAX_VOTES_ARRAY_SIZE = 5000;
+
+    /** @var string|null */
+    protected static ?string $cachedIp = null;
+
+    /** @var string */
     public $table = 'spanjaan_blogportal_visitors';
 
-    /**
-     * Enable Modal Timestamps
-     *
-     * @var boolean
-     */
+    /** @var bool */
     public $timestamps = true;
 
-    /**
-     * Guarded Model attributes
-     *
-     * @var array
-     */
+    /** @var array<string> */
     protected $guarded = [];
 
-    /**
-     * Fillable Model attributes
-     *
-     * @var array
-     */
+    /** @var array<string> */
     protected $fillable = [
-        'user'
+        'user',
     ];
 
-    /**
-     * JSONable Model attributes
-     *
-     * @var array
-     */
+    /** @var array<string> */
     protected $jsonable = [
         'posts',
         'likes',
@@ -53,108 +42,202 @@ class Visitor extends Model
     ];
 
     /**
-     * Get Current Visitor
+     * Get Current Visitor User
      *
-     * @return Visitor
+     * @return self
      */
     public static function currentUser(): self
     {
-        // Get real IP address (considering proxies)
-        $ip = self::getClientIp();
-        
-        // Get user agent with fallback
-        $agent = Request::header('User-Agent', 'unknown');
-        
-        // Generate unique user identifier based on IP and user agent
-        $user_id = hash_hmac('sha1', $ip, $agent);
+        $visitorId = self::getVisitorId();
 
         return self::firstOrCreate([
-            'user' => $user_id
+            'user' => $visitorId,
         ]);
     }
-    
+
     /**
-     * Get client IP address with proxy support
+     * Generate Visitor ID
+     *
+     * @return string
+     */
+    protected static function getVisitorId(): string
+    {
+        $sessionId = self::getSessionId();
+        if ($sessionId) {
+            return 'session:' . $sessionId;
+        }
+
+        $ip = self::getClientIp();
+        $agent = Request::header('User-Agent', 'unknown');
+
+        return 'ip:' . hash_hmac('sha256', $ip, $agent);
+    }
+
+    /**
+     * Get Session ID
+     *
+     * @return string|null
+     */
+    protected static function getSessionId(): ?string
+    {
+        if (class_exists('Session') && Session::driver()) {
+            $sessionId = Session::getId();
+            if (!empty($sessionId) && strlen($sessionId) > 8) {
+                return $sessionId;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get Client IP Address
      *
      * @return string
      */
     protected static function getClientIp(): string
     {
+        if (self::$cachedIp !== null) {
+            return self::$cachedIp;
+        }
+
+        $ip = self::getIpFromDirectSources();
+
+        self::$cachedIp = $ip;
+
+        return $ip;
+    }
+
+    /**
+     * Get IP from Direct Sources
+     *
+     * @return string
+     */
+    protected static function getIpFromDirectSources(): string
+    {
+        if (self::validateCloudflareHeaders()) {
+            $cfIp = self::getCloudflareIp(self::CLOUDLARE_REAL_IP_HEADER);
+            if ($cfIp !== null) {
+                return $cfIp;
+            }
+        }
+
         $ipKeys = [
-            'HTTP_CF_CONNECTING_IP',     // Cloudflare
-            'HTTP_X_FORWARDED_FOR',     // Proxy
-            'HTTP_X_REAL_IP',           // Nginx proxy
-            'HTTP_CLIENT_IP',           // Client IP
-            'REMOTE_ADDR'               // Default
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_REAL_IP',
+            'HTTP_X_CLUSTER_CLIENT_IP',
+            'REMOTE_ADDR',
         ];
-        
+
         foreach ($ipKeys as $key) {
-            $value = Request::header($key);
+            $value = Request::header($key) ?? $_SERVER[$key] ?? null;
             if (!empty($value)) {
-                // X-Forwarded-For can contain multiple IPs, get the first one
-                $ips = explode(',', $value);
-                $ip = trim($ips[0]);
-                
-                // Validate IP address
+                $ips = array_map('trim', explode(',', $value));
+                foreach ($ips as $ip) {
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
+                        return $ip;
+                    }
+                }
+                $ip = trim(explode(',', $value)[0]);
                 if (filter_var($ip, FILTER_VALIDATE_IP)) {
                     return $ip;
                 }
             }
         }
-        
-        return '0.0.0.0';
+
+        $fallbackIp = Request::ip();
+        if ($fallbackIp && filter_var($fallbackIp, FILTER_VALIDATE_IP)) {
+            return $fallbackIp;
+        }
+
+        return '127.0.0.1';
     }
 
     /**
-     * Check if user has seen
+     * Validate Cloudflare Headers
      *
-     * @param Post|int $post The desired Post model or Post id to check.
-     * @return boolean
+     * @return bool
+     */
+    protected static function validateCloudflareHeaders(): bool
+    {
+        $cfRay = Request::header(self::CLOUDLARE_RAY_HEADER);
+        return !empty($cfRay) && preg_match('/^[a-f0-9]{16}$/i', $cfRay);
+    }
+
+    /**
+     * Get Cloudflare Real IP
+     *
+     * @param string $header
+     * @return string|null
+     */
+    protected static function getCloudflareIp(string $header): ?string
+    {
+        $value = Request::header($header);
+        if (empty($value)) {
+            return null;
+        }
+
+        $parts = explode(',', $value);
+        $ip = trim($parts[0]);
+
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+                return null;
+            }
+        }
+
+        return $ip;
+    }
+
+    /**
+     * Check if Post has been Seen
+     *
+     * @param mixed $post
+     * @return bool
      */
     public function hasSeen($post): bool
     {
-        if ($post instanceof Post) {
+        if ($post instanceof \Winter\Blog\Models\Post) {
             $post = $post->id;
         }
+        $post = (int) $post;
 
-        $posts = $this->getAttribute('posts');
-        if (!is_array($posts)) {
-            $posts = [];
-        }
+        $posts = $this->getArrayAttribute('posts');
 
-        return in_array($post, $posts);
+        return in_array($post, $posts, true);
     }
 
     /**
-     * Mark a Post as Seen
+     * Mark Post as Seen
      *
-     * @param Post|int $post The desired Post model or Post id to mark.
-     * @return boolean
+     * @param mixed $post
+     * @return bool
      */
     public function markAsSeen($post): bool
     {
-        if ($post instanceof Post) {
+        if ($post instanceof \Winter\Blog\Models\Post) {
             $post = $post->id;
         }
+        $post = (int) $post;
 
-        $posts = $this->getAttribute('posts');
-        if (!is_array($posts)) {
-            $posts = [];
+        $posts = $this->getArrayAttribute('posts');
+
+        if (count($posts) >= self::MAX_POSTS_ARRAY_SIZE) {
+            $posts = array_slice($posts, -(int) ceil(self::MAX_POSTS_ARRAY_SIZE / 2));
         }
 
-        if (!in_array($post, $posts)) {
+        if (!in_array($post, $posts, true)) {
             $posts[] = $post;
-            $this->setAttribute('posts', $posts);
+            $this->setArrayAttribute('posts', $posts);
             return $this->save();
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     /**
      * Get Comment Vote Status
      *
-     * @param Comment|int $comment
+     * @param mixed $comment
      * @return string|null
      */
     public function getCommentVote($comment): ?string
@@ -162,23 +245,26 @@ class Visitor extends Model
         if ($comment instanceof Comment) {
             $comment = $comment->id;
         }
+        $comment = (int) $comment;
 
-        $likes    = $this->getAttribute('likes');
-        $dislikes = $this->getAttribute('dislikes');
+        $likes = $this->getArrayAttribute('likes');
+        $dislikes = $this->getArrayAttribute('dislikes');
 
-        if (is_array($likes) && in_array($comment, $likes)) {
+        if (in_array($comment, $likes, true)) {
             return 'like';
-        } elseif (is_array($dislikes) && in_array($comment, $dislikes)) {
-            return 'dislike';
-        } else {
-            return null;
         }
+
+        if (in_array($comment, $dislikes, true)) {
+            return 'dislike';
+        }
+
+        return null;
     }
 
     /**
-     * Add Comment Like
+     * Add Like to Comment
      *
-     * @param Comment|int $comment
+     * @param mixed $comment
      * @return bool
      */
     public function addCommentLike($comment): bool
@@ -186,25 +272,27 @@ class Visitor extends Model
         if ($comment instanceof Comment) {
             $comment = $comment->id;
         }
+        $comment = (int) $comment;
 
-        $likes = $this->getAttribute('likes');
-        if (!is_array($likes)) {
-            $likes = [];
-        }
+        $likes = $this->getArrayAttribute('likes');
 
-        if (!in_array($comment, $likes)) {
+        if (!in_array($comment, $likes, true)) {
+            if (count($likes) >= self::MAX_VOTES_ARRAY_SIZE) {
+                $this->removeCommentLike($likes[0]);
+                $likes = $this->getArrayAttribute('likes');
+            }
             $likes[] = $comment;
-            $this->setAttribute('likes', $likes);
+            $this->setArrayAttribute('likes', $likes);
             return $this->save();
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     /**
-     * Remove Comment Like
+     * Remove Like from Comment
      *
-     * @param Comment|int $comment
+     * @param mixed $comment
      * @return bool
      */
     public function removeCommentLike($comment): bool
@@ -212,25 +300,15 @@ class Visitor extends Model
         if ($comment instanceof Comment) {
             $comment = $comment->id;
         }
+        $comment = (int) $comment;
 
-        $likes = $this->getAttribute('likes');
-        if (!is_array($likes)) {
-            $likes = [];
-        }
-
-        if (!in_array($comment, $likes)) {
-            return true;
-        } else {
-            // array_values reindexes to prevent JSON object encoding
-            $this->setAttribute('likes', array_values(array_filter($likes, fn ($val) => $val !== $comment)));
-            return $this->save();
-        }
+        return $this->removeFromArrayAttribute('likes', $comment);
     }
 
     /**
-     * Add Comment Dislike
+     * Add Dislike to Comment
      *
-     * @param Comment|int $comment
+     * @param mixed $comment
      * @return bool
      */
     public function addCommentDislike($comment): bool
@@ -238,25 +316,27 @@ class Visitor extends Model
         if ($comment instanceof Comment) {
             $comment = $comment->id;
         }
+        $comment = (int) $comment;
 
-        $dislikes = $this->getAttribute('dislikes');
-        if (!is_array($dislikes)) {
-            $dislikes = [];
-        }
+        $dislikes = $this->getArrayAttribute('dislikes');
 
-        if (!in_array($comment, $dislikes)) {
+        if (!in_array($comment, $dislikes, true)) {
+            if (count($dislikes) >= self::MAX_VOTES_ARRAY_SIZE) {
+                $this->removeCommentDislike($dislikes[0]);
+                $dislikes = $this->getArrayAttribute('dislikes');
+            }
             $dislikes[] = $comment;
-            $this->setAttribute('dislikes', $dislikes);
+            $this->setArrayAttribute('dislikes', $dislikes);
             return $this->save();
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     /**
-     * Remove Comment Dislike
+     * Remove Dislike from Comment
      *
-     * @param Comment|int $comment
+     * @param mixed $comment
      * @return bool
      */
     public function removeCommentDislike($comment): bool
@@ -264,18 +344,59 @@ class Visitor extends Model
         if ($comment instanceof Comment) {
             $comment = $comment->id;
         }
+        $comment = (int) $comment;
 
-        $dislikes = $this->getAttribute('dislikes');
-        if (!is_array($dislikes)) {
-            $dislikes = [];
+        return $this->removeFromArrayAttribute('dislikes', $comment);
+    }
+
+    /**
+     * Get Array Attribute
+     *
+     * @param string $key
+     * @return array<int>
+     */
+    protected function getArrayAttribute(string $key): array
+    {
+        $value = $this->getAttribute($key);
+        if (!is_array($value)) {
+            return [];
         }
 
-        if (!in_array($comment, $dislikes)) {
+        return array_values(array_filter($value, static fn(mixed $v): bool => is_int($v)));
+    }
+
+    /**
+     * Set Array Attribute
+     *
+     * @param string $key
+     * @param array<int> $value
+     * @return void
+     */
+    protected function setArrayAttribute(string $key, array $value): void
+    {
+        $cleaned = array_values(array_filter(array_unique($value), static fn(mixed $v): bool => is_int($v)));
+        $this->setAttribute($key, $cleaned);
+    }
+
+    /**
+     * Remove Value from Array Attribute
+     *
+     * @param string $key
+     * @param int $value
+     * @return bool
+     */
+    protected function removeFromArrayAttribute(string $key, int $value): bool
+    {
+        $array = $this->getArrayAttribute($key);
+        $initialCount = count($array);
+
+        $filtered = array_values(array_filter($array, fn($val) => $val !== $value));
+
+        if (count($filtered) === $initialCount) {
             return true;
-        } else {
-            // array_values reindexes to prevent JSON object encoding
-            $this->setAttribute('dislikes', array_values(array_filter($dislikes, fn ($val) => $val !== $comment)));
-            return $this->save();
         }
+
+        $this->setArrayAttribute($key, $filtered);
+        return $this->save();
     }
 }

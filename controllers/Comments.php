@@ -11,65 +11,55 @@ use SpAnjaan\BlogPortal\Models\Comment;
 
 class Comments extends Controller
 {
-    /**
-     * Implemented Interfaces
-     *
-     * @var array
-     */
+    /** @var array<string> */
     public $implement = [
         \Backend\Behaviors\FormController::class,
-        \Backend\Behaviors\ListController::class
+        \Backend\Behaviors\ListController::class,
     ];
 
-    /**
-     * Form Configuration File
-     *
-     * @var string
-     */
+    /** @var string */
     public $formConfig = 'config_form.yaml';
 
-    /**
-     * List Configuration File
-     *
-     * @var string
-     */
+    /** @var string */
     public $listConfig = 'config_list.yaml';
 
     /**
-     * Construct the controller
+     * Constructor
+     *
+     * @return void
      */
     public function __construct()
     {
         parent::__construct();
         BackendMenu::setContext('Winter.Blog', 'blog', 'spanjaan_blogportal_comments');
-        // Include CSS for the Comments backend list
         $this->addCss('/plugins/spanjaan/blogportal/assets/css/comments-styles.css');
     }
 
-    //Initilize preview and display previous next button in preview page
+    /**
+     * Preview Comment
+     *
+     * @param mixed $id
+     * @return mixed
+     */
     public function preview($id)
     {
         $record = $this->formFindModelObject($id);
 
-        // Initialize the ListController
         $this->makeLists();
 
-        // Get the position of the current record within the current list set
         $listQuery = $this->listGetWidget()->prepareQuery();
         $totalRecords = $listQuery->count();
-        \DB::statement(\DB::raw('set @row_num=0'));
-        $listQuery->selectRaw('@row_num:= @row_num + 1 as `record_position`');
 
         $previousId = 0;
         $nextId = 0;
         $currentIndex = null;
-        // Note, if you have few records overall but massive sizes per record you can use
-        // $listQuery->cursor() to make one DB query per record instead of loading them all at once
+        $recordIndex = 0;
+
         foreach ($listQuery->get() as $listRecord) {
+            $recordIndex++;
             if ($listRecord->getKey() === $record->getKey()) {
-                $currentIndex = $listRecord->record_position;
-                continue;
-            } elseif ($currentIndex) {
+                $currentIndex = $recordIndex;
+            } elseif ($currentIndex !== null) {
                 $nextId = $listRecord->getKey();
                 break;
             } else {
@@ -88,51 +78,40 @@ class Comments extends Controller
         return $this->asExtension('FormController')->preview($id);
     }
 
-    // Add CSS classes based on comment status for different rows in the backend list
-    public function listInjectRowClass($record, $definition)
+    /**
+     * Inject Row Class for List
+     *
+     * @param mixed $record
+     * @param mixed $definition
+     * @return string
+     */
+    public function listInjectRowClass($record, $definition): string
     {
-        $class = '';
-
-        if ($record->status === 'pending') {
-            $class = 'comment-pending';
-        } elseif ($record->status === 'spam') {
-            $class = 'comment-spam';
-        } elseif ($record->status === 'rejected') {
-            $class = 'comment-rejected';
-        } elseif ($record->status === 'approved') {
-            $class = 'comment-approved';
-        }
-
-        return $class;
+        return match ($record->status) {
+            'pending' => 'comment-pending',
+            'spam'    => 'comment-spam',
+            'rejected'=> 'comment-rejected',
+            'approved'=> 'comment-approved',
+            default   => '',
+        };
     }
 
-    // Display comments status counts in the backend toolbar
-    public static function getCommentStats($part)
+    /**
+     * Get Comment Statistics
+     *
+     * @param string $part
+     * @return int|null
+     */
+    public static function getCommentStats(string $part): ?int
     {
-        switch ($part) {
-            case 'all_count':
-                return Comment::count();
-                break;
+        $stats = [
+            'all_count'      => Comment::query()->count(),
+            'approved_count' => Comment::where('status', 'approved')->count(),
+            'rejected_count' => Comment::where('status', 'rejected')->count(),
+            'spam_count'     => Comment::where('status', 'spam')->count(),
+            'pending_count'  => Comment::where('status', 'pending')->count(),
+        ];
 
-            case 'approved_count':
-                return Comment::where('status', 'approved')->count();
-                break;
-
-            case 'rejected_count':
-                return Comment::where('status', 'rejected')->count();
-                break;
-
-            case 'spam_count':
-                return Comment::where('status', 'spam')->count();
-                break;
-
-            case 'pending_count':
-                return Comment::where('status', 'pending')->count();
-                break;
-
-            default:
-                return null;
-                break;
-        }
+        return $stats[$part] ?? null;
     }
 }

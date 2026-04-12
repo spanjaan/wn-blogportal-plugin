@@ -4,20 +4,14 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Updates;
 
-use Winter\Storm\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
-use Winter\Storm\Database\Updates\Migration;
 use System\Classes\PluginManager;
+use Winter\Storm\Database\Updates\Migration;
+use Winter\Storm\Support\Facades\Schema;
 
-/**
- * CreateTagsTable Migration
- */
 class CreateTagsTable extends Migration
 {
-    /**
-     * @inheritDoc
-     */
-    public function up()
+    public function up(): void
     {
         if (!PluginManager::instance()->hasPlugin('Winter.Blog')) {
             return;
@@ -42,10 +36,7 @@ class CreateTagsTable extends Migration
         });
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('spanjaan_blogportal_tags_posts');
         Schema::dropIfExists('spanjaan_blogportal_tags');

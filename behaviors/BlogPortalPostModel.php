@@ -4,61 +4,57 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Behaviors;
 
-use Winter\Storm\Extension\ExtensionBase;
-use Winter\Blog\Models\Post;
 use SpAnjaan\BlogPortal\Classes\BlogPortalPost;
 use SpAnjaan\BlogPortal\Models\Comment;
 use SpAnjaan\BlogPortal\Models\Tag;
+use Winter\Blog\Models\Post;
+use Winter\Storm\Extension\ExtensionBase;
 
 class BlogPortalPostModel extends ExtensionBase
 {
-    /**
-     * Parent Post Model
-     *
-     * @var Post
-     */
+    /** @var Post */
     protected Post $model;
 
-    /**
-     * BlogPortal Post Model DataSet
-     *
-     * @var ?BlogPortalPost
-     */
+    /** @var BlogPortalPost|null */
     protected ?BlogPortalPost $blogportalSet = null;
 
     /**
      * Constructor
      *
      * @param Post $model
+     * @return void
      */
     public function __construct(Post $model)
     {
         $this->model = $model;
 
         $model->hasMany['spanjaan_blogportal_comments'] = [
-            Comment::class
+            Comment::class,
         ];
 
         $model->hasMany['spanjaan_blogportal_comments_count'] = [
             Comment::class,
-            'count' => true
+            'count' => true,
         ];
 
         $model->belongsToMany['spanjaan_blogportal_tags'] = [
             Tag::class,
             'table' => 'spanjaan_blogportal_tags_posts',
-            'order' => 'slug'
+            'order' => 'slug',
         ];
 
-        $model->addDynamicMethod('scopeFilterTags', function ($query, $tags) {
-            return $query->whereHas('spanjaan_blogportal_tags', function ($q) use ($tags) {
-                $q->whereIn('id', $tags);
-            });
-        });
+        $model->addDynamicMethod(
+            'scopeFilterTags',
+            function ($query, $tags) {
+                return $query->whereHas('spanjaan_blogportal_tags', function ($q) use ($tags) {
+                    $q->whereIn('id', $tags);
+                });
+            }
+        );
     }
 
     /**
-     * Get main BlogPortal Space
+     * Get BlogPortal Attribute
      *
      * @return BlogPortalPost
      */

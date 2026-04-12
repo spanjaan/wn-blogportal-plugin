@@ -40,3 +40,13 @@
 2.0.2:
     - 'Bug fixes and performance improvements in comment handling'
     - 'Code cleanup and optimization in all components'
+2.0.3:
+    - 'Security improvements: Enhanced IP detection with X-Forwarded-For and Cloudflare support'
+    - 'Security: Added queue-based async view counting to prevent blocking'
+    - 'Security: Added Cloudflare HTTP_CF_CONNECTING_IP header support'
+    - 'Code quality: Fixed array_filter callbacks to use arrow functions instead of strings'
+    - 'Code quality: Added proper return types to all methods'
+    - 'Code quality: Replaced dynamic method calls with explicit match expressions'
+    - 'Code quality: Added logging to empty catch blocks'
+    - 'Performance: Created RecordViewJob for async view counting via queue'
+    - 'Performance: View tracking no longer blocks page requests'

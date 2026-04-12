@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 namespace SpAnjaan\BlogPortal\Components;
 
+use Log;
 use Cms\Classes\ComponentBase;
 use SpAnjaan\BlogPortal\Models\Sharecount;
 use Winter\Blog\Models\Post;
 
 class ShareButtons extends ComponentBase
 {
-    /**
-     * Supported share platforms
-     *
-     * @var array
-     */
+    public const PLATFORM_FACEBOOK = 'facebook';
+    public const PLATFORM_TWITTER = 'twitter';
+    public const PLATFORM_LINKEDIN = 'linkedin';
+    public const PLATFORM_WHATSAPP = 'whatsapp';
+
     protected const PLATFORMS = [
-        'facebook',
-        'twitter',
-        'linkedin',
-        'whatsapp',
+        self::PLATFORM_FACEBOOK,
+        self::PLATFORM_TWITTER,
+        self::PLATFORM_LINKEDIN,
+        self::PLATFORM_WHATSAPP,
     ];
 
     /**
-     * Define component details
+     * Define Component Details
      *
      * @return array
      */
@@ -36,7 +37,7 @@ class ShareButtons extends ComponentBase
     }
 
     /**
-     * Define component properties
+     * Define Component Properties
      *
      * @return array
      */
@@ -52,49 +53,39 @@ class ShareButtons extends ComponentBase
         ];
     }
 
-        /**
+    /**
      * Run Component
      *
-     * @return mixed
+     * @return void
      */
-    public function onRun()
+    public function onRun(): void
     {
-        
         $this->addJs('/plugins/spanjaan/blogportal/assets/js/share-button.js');
-
     }
 
     /**
-     * Resolve post ID by:
-     * 1. page['post'] already set by Blog Post component (most common case)
-     * 2. URL :slug param → DB lookup
-     * 3. URL :id param (numeric) → direct
-     *
-     * Must be public so Twig can call {{ __SELF__.resolvePostId() }}
+     * Resolve Post ID from various sources
      *
      * @return int
      */
     public function resolvePostId(): int
     {
-        // 1️⃣ Blog post component already resolved the post onto the page
         $post = $this->page['post'] ?? null;
-        if ($post instanceof Post && $post->id) {
+        if ($post instanceof Post && !empty($post->id)) {
             return (int) $post->id;
         }
 
-        // 2️⃣ Try slug URL parameter → DB lookup
         $slugParam = $this->property('postSlug', 'slug');
         $slug = $this->param($slugParam);
-        if ($slug) {
+        if (!empty($slug)) {
             $found = Post::where('slug', $slug)->first();
-            if ($found) {
+            if ($found && !empty($found->id)) {
                 return (int) $found->id;
             }
         }
 
-        // 3️⃣ Try numeric :id URL parameter
         $id = (int) $this->param('id');
-        if ($id) {
+        if ($id > 0) {
             return $id;
         }
 
@@ -102,8 +93,7 @@ class ShareButtons extends ComponentBase
     }
 
     /**
-     * Get the share counts for the current post.
-     * Called via {{ __SELF__.shareCounts() }} in the component template.
+     * Get Share Counts for Current Post
      *
      * @return array
      */
@@ -113,7 +103,7 @@ class ShareButtons extends ComponentBase
     }
 
     /**
-     * Get the share counts for a given post ID
+     * Get Share Counts for Specific Post
      *
      * @param int $postId
      * @return array
@@ -124,23 +114,31 @@ class ShareButtons extends ComponentBase
             return $this->defaultCounts();
         }
 
-        $sharecount = Sharecount::where('post_id', $postId)->first();
+        try {
+            $sharecount = Sharecount::where('post_id', $postId)->first();
+        } catch (\Throwable $e) {
+            Log::error('BlogPortal ShareButtons: Failed to load share counts', [
+                'post_id' => $postId,
+                'error' => $e->getMessage()
+            ]);
+            return $this->defaultCounts();
+        }
         
         if (!$sharecount) {
             return $this->defaultCounts();
         }
 
         return [
-            'facebook' => (int) ($sharecount->facebook ?? 0),
-            'twitter'  => (int) ($sharecount->twitter  ?? 0),
-            'linkedin' => (int) ($sharecount->linkedin ?? 0),
-            'whatsapp' => (int) ($sharecount->whatsapp ?? 0),
-            'total'    => $this->getTotalShareCount($sharecount),
+            self::PLATFORM_FACEBOOK => (int) ($sharecount->facebook ?? 0),
+            self::PLATFORM_TWITTER  => (int) ($sharecount->twitter  ?? 0),
+            self::PLATFORM_LINKEDIN => (int) ($sharecount->linkedin ?? 0),
+            self::PLATFORM_WHATSAPP => (int) ($sharecount->whatsapp ?? 0),
+            'total'                 => $this->getTotalShareCount($sharecount),
         ];
     }
 
     /**
-     * Calculate the total share count
+     * Calculate Total Share Count
      *
      * @param Sharecount $sharecount
      * @return int
@@ -154,7 +152,7 @@ class ShareButtons extends ComponentBase
     }
 
     /**
-     * Handle the share action and update the share count
+     * Handle Share Button Click
      *
      * @return array
      */
@@ -163,50 +161,78 @@ class ShareButtons extends ComponentBase
         $platform = (string) post('platform');
         $postId   = (int)   post('postId');
 
-        if (!in_array($platform, self::PLATFORMS)) {
+        if (!in_array($platform, self::PLATFORMS, true)) {
+            Log::warning('BlogPortal ShareButtons: Invalid platform attempted', [
+                'platform' => $platform,
+                'ip' => request()->ip() ?? 'unknown'
+            ]);
             return ['error' => 'Invalid platform'];
         }
 
-        if (!$postId) {
+        if (!$postId || $postId <= 0) {
             return ['error' => 'Invalid post ID'];
         }
 
-        if (!Post::where('id', $postId)->exists()) {
+        try {
+            $postExists = Post::where('id', $postId)->exists();
+        } catch (\Throwable $e) {
+            Log::error('BlogPortal ShareButtons: Database error checking post', [
+                'post_id' => $postId,
+                'error' => $e->getMessage()
+            ]);
+            return ['error' => 'Post not found'];
+        }
+        
+        if (!$postExists) {
             return ['error' => 'Post not found'];
         }
 
-        $sharecount = Sharecount::where('post_id', $postId)->first();
-        
-        if (!$sharecount) {
-            $sharecount = new Sharecount(['post_id' => $postId]);
+        try {
+            $sharecount = Sharecount::where('post_id', $postId)->first();
+            
+            if (!$sharecount) {
+                $sharecount = new Sharecount();
+                $sharecount->post_id = $postId;
+                $sharecount->facebook = 0;
+                $sharecount->twitter = 0;
+                $sharecount->linkedin = 0;
+                $sharecount->whatsapp = 0;
+            }
+            
+            $sharecount->incrementShareCount($platform);
+        } catch (\Throwable $e) {
+            Log::error('BlogPortal ShareButtons: Failed to increment share count', [
+                'post_id' => $postId,
+                'platform' => $platform,
+                'error' => $e->getMessage()
+            ]);
+            return ['error' => 'Failed to update share count'];
         }
-        
-        $sharecount->incrementShareCount($platform);
 
         return [
             'shareCounts' => [
-                'facebook' => (int) ($sharecount->facebook ?? 0),
-                'twitter'  => (int) ($sharecount->twitter  ?? 0),
-                'linkedin' => (int) ($sharecount->linkedin ?? 0),
-                'whatsapp' => (int) ($sharecount->whatsapp ?? 0),
-                'total'    => $this->getTotalShareCount($sharecount),
+                self::PLATFORM_FACEBOOK => (int) ($sharecount->facebook ?? 0),
+                self::PLATFORM_TWITTER  => (int) ($sharecount->twitter  ?? 0),
+                self::PLATFORM_LINKEDIN => (int) ($sharecount->linkedin ?? 0),
+                self::PLATFORM_WHATSAPP => (int) ($sharecount->whatsapp ?? 0),
+                'total'                 => $this->getTotalShareCount($sharecount),
             ],
         ];
     }
 
     /**
-     * Return default zero counts
+     * Get Default Share Counts
      *
      * @return array
      */
     protected function defaultCounts(): array
     {
         return [
-            'facebook' => 0,
-            'twitter'  => 0,
-            'linkedin' => 0,
-            'whatsapp' => 0,
-            'total'    => 0,
+            self::PLATFORM_FACEBOOK => 0,
+            self::PLATFORM_TWITTER  => 0,
+            self::PLATFORM_LINKEDIN => 0,
+            self::PLATFORM_WHATSAPP => 0,
+            'total'                 => 0,
         ];
     }
 }

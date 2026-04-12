@@ -10,117 +10,113 @@ use Cms\Classes\Page;
 use Cms\Classes\Theme;
 use Lang;
 use Winter\Blog\Models\Post;
-use System\Classes\UpdateManager;
 
 class PostsList extends ReportWidgetBase
 {
     /**
-     * Initialize the widget, called by the constructor and free from its parameters.
+     * Initialize Widget
      *
      * @return void
      */
-    public function init() {}
+    public function init(): void
+    {
+    }
 
     /**
-     * Initialize the properties of this widget.
+     * Define Widget Properties
      *
-     * @return void
+     * @return array
      */
-    public function defineProperties()
+    public function defineProperties(): array
     {
         return [
             'postPage' => [
-                'title'         => 'winter.blog::lang.settings.posts_post',
-                'description'   => 'winter.blog::lang.settings.posts_post_description',
-                'type'          => 'dropdown',
-                'default'       => 'blog/post',
+                'title'       => 'winter.blog::lang.settings.posts_post',
+                'description' => 'winter.blog::lang.settings.posts_post_description',
+                'type'        => 'dropdown',
+                'default'     => 'blog/post',
             ],
             'defaultOrder' => [
-                'title'         => 'spanjaan.blogportal::lang.components.post.default_order',
-                'description'   => 'spanjaan.blogportal::lang.components.post.default_order_comment',
-                'type'          => 'dropdown',
-                'default'       => 'by_published',
-            ]
+                'title'       => 'spanjaan.blogportal::lang.components.post.default_order',
+                'description' => 'spanjaan.blogportal::lang.components.post.default_order_comment',
+                'type'        => 'dropdown',
+                'default'     => 'by_published',
+            ],
         ];
     }
 
     /**
-     * Get Post Page Dropdown Options
+     * Get Post Page Options
      *
-     * @return mixed
+     * @return array
      */
-    public function getPostPageOptions()
+    public function getPostPageOptions(): array
     {
         return Page::sortBy('baseFileName')->lists('baseFileName', 'baseFileName');
     }
 
     /**
-     * Get Post Page Dropdown Options
+     * Get Default Order Options
      *
-     * @return mixed
+     * @return array
      */
-    public function getDefaultOrderOptions()
+    public function getDefaultOrderOptions(): array
     {
         return [
             'by_published' => Lang::get('spanjaan.blogportal::lang.components.post.by_published'),
-            'by_views' => Lang::get('spanjaan.blogportal::lang.components.post.by_views'),
-            'by_visitors' => Lang::get('spanjaan.blogportal::lang.components.post.by_visitors')
+            'by_views'     => Lang::get('spanjaan.blogportal::lang.components.post.by_views'),
+            'by_visitors'  => Lang::get('spanjaan.blogportal::lang.components.post.by_visitors'),
         ];
     }
 
     /**
-     * Adds widget specific asset files. Use $this->addJs() and $this->addCss()
-     * to register new assets to include on the page.
+     * Load Widget Assets
      *
      * @return void
      */
-      protected function loadAssets()
+    protected function loadAssets(): void
     {
         $this->addCss('css/post-list.css');
     }
 
     /**
-     * Get Posts
+     * Get Posts Based on Order
      *
      * @param string $order
-     * @return mixed
+     * @return \Winter\Storm\Database\Collection
      */
-    protected function getPosts($order)
+    protected function getPosts(string $order): \Winter\Storm\Database\Collection
     {
         $query = Post::limit(10);
-        if ($order === 'by_published') {
-            $posts = $query
-                ->where('published', '1')
+
+        $posts = match ($order) {
+            'by_published' => $query->where('published', '1')
                 ->orderBy('published_at', 'DESC')
-                ->get();
-        } elseif ($order === 'by_views') {
-            $posts = $query
-                ->where('published', '1')
+                ->get(),
+            'by_views' => $query->where('published', '1')
                 ->orderBy('spanjaan_blogportal_views', 'DESC')
                 ->orderBy('published_at', 'DESC')
-                ->get();
-        } elseif ($order === 'by_visitors') {
-            $posts = $query
-                ->where('published', '1')
+                ->get(),
+            'by_visitors' => $query->where('published', '1')
                 ->orderBy('spanjaan_blogportal_unique_views', 'DESC')
                 ->orderBy('published_at', 'DESC')
-                ->get();
-        } else {
-            $posts = $query->get();
-        }
+                ->get(),
+            default => $query->get(),
+        };
 
         if (!empty($postPage = $this->property('postPage'))) {
             $posts->each(fn($item) => $item->setUrl($postPage, new Controller(Theme::getActiveTheme())));
         }
+
         return $posts;
     }
 
     /**
-     * Renders the widget's primary contents.
+     * Render Widget
      *
-     * @return string HTML markup supplied by this widget.
+     * @return string
      */
-    public function render()
+    public function render(): string
     {
         $order = $this->property('defaultOrder', 'by_published');
         if (!array_key_exists($order, $this->getDefaultOrderOptions())) {
@@ -128,27 +124,28 @@ class PostsList extends ReportWidgetBase
         }
 
         $posts = $this->getPosts($order);
+
         return $this->makePartial('widget', [
-            'order' => $order,
-            'posts' => $posts,
-            'postsPartial' => $this->makePartial('posts', [
-                'posts' => $posts
+            'order'         => $order,
+            'posts'         => $posts,
+            'postsPartial'  => $this->makePartial('posts', [
+                'posts' => $posts,
             ]),
-            'counts' => [
-                'total' => Post::count(),
+            'counts'        => [
+                'total'     => Post::count(),
                 'published' => Post::where('published', 1)->where('published_at', '<=', date('Y-m-d H:i:s'))->count(),
                 'scheduled' => Post::where('published', 1)->where('published_at', '>', date('Y-m-d H:i:s'))->count(),
-                'draft' => Post::where('published', 0)->count(),
-            ]
+                'draft'     => Post::where('published', 0)->count(),
+            ],
         ]);
     }
 
     /**
-     * AJAX Handler - Change Posts List
+     * Change Post List AJAX Handler
      *
-     * @return void
+     * @return array
      */
-    public function onChangePostList()
+    public function onChangePostList(): array
     {
         $order = input('order');
         if (!array_key_exists($order, $this->getDefaultOrderOptions())) {
@@ -156,11 +153,12 @@ class PostsList extends ReportWidgetBase
         }
 
         $posts = $this->getPosts($order);
+
         return [
-            'order' => $order,
+            'order'       => $order,
             '#postsList' => $this->makePartial('posts', [
-                'posts' => $posts
-            ])
+                'posts' => $posts,
+            ]),
         ];
     }
 }

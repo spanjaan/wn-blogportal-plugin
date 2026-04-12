@@ -9,32 +9,22 @@ use Backend\Classes\Controller;
 
 class Tags extends Controller
 {
-    /**
-     * Implemented Interfaces
-     *
-     * @var array
-     */
+    /** @var array<string> */
     public $implement = [
         \Backend\Behaviors\FormController::class,
-        \Backend\Behaviors\ListController::class
+        \Backend\Behaviors\ListController::class,
     ];
 
-    /**
-     * Form Configuration File
-     *
-     * @var string
-     */
+    /** @var string */
     public $formConfig = 'config_form.yaml';
 
-    /**
-     * List Configuration File
-     *
-     * @var string
-     */
+    /** @var string */
     public $listConfig = 'config_list.yaml';
 
     /**
-     * __construct the controller
+     * Constructor
+     *
+     * @return void
      */
     public function __construct()
     {

@@ -10,41 +10,42 @@ use SpAnjaan\BlogPortal\Classes\BlogPortalBackendUser;
 
 class BlogPortalBackendUserModel extends ExtensionBase
 {
-    /**
-     * Parent Post Model
-     *
-     * @var User
-     */
+    /** @var User */
     protected User $model;
 
-    /**
-     * BlogPortal Post Model DataSet
-     *
-     * @var ?BlogPortalBackendUser
-     */
-    protected ?BlogPortalBackendUser $blogportalSet;
+    /** @var BlogPortalBackendUser|null */
+    protected ?BlogPortalBackendUser $blogportalSet = null;
 
     /**
      * Constructor
      *
      * @param User $model
+     * @return void
      */
     public function __construct(User $model)
     {
         $this->model = $model;
 
-        // Deprecated Methods
-        $model->addDynamicMethod('blogportal_display', fn () => $this->getBlogportalAttribute()->display());
-        $model->addDynamicMethod('blogportal_slug', fn () => $this->getBlogportalAttribute()->slug());
-        $model->addDynamicMethod('blogportal_about', fn () => $this->getBlogportalAttribute()->about());
+        $model->addDynamicMethod(
+            'blogportal_display',
+            fn() => $this->getBlogportalAttribute()->display()
+        );
+        $model->addDynamicMethod(
+            'blogportal_slug',
+            fn() => $this->getBlogportalAttribute()->slug()
+        );
+        $model->addDynamicMethod(
+            'blogportal_about',
+            fn() => $this->getBlogportalAttribute()->about()
+        );
     }
 
     /**
-     * Get main BlogPortal Space
+     * Get BlogPortal Attribute
      *
      * @return BlogPortalBackendUser
      */
-    public function getBlogportalAttribute()
+    public function getBlogportalAttribute(): BlogPortalBackendUser
     {
         if (empty($this->blogportalSet)) {
             $this->blogportalSet = new BlogPortalBackendUser($this->model);

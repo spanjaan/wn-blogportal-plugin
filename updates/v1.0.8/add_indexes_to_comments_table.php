@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SpAnjaan\BlogPortal\Updates;
 
-use Winter\Storm\Support\Facades\Schema;
-use Winter\Storm\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\Blueprint;
 use Winter\Storm\Database\Updates\Migration;
+use Winter\Storm\Support\Facades\Schema;
 
 class AddIndexesToCommentsTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::table('spanjaan_blogportal_comments', function (Blueprint $table) {
             $table->index('post_id', 'idx_comments_post_id');
@@ -19,7 +21,7 @@ class AddIndexesToCommentsTable extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::table('spanjaan_blogportal_comments', function (Blueprint $table) {
             $table->dropIndex('idx_comments_post_id');

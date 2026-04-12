@@ -6,57 +6,38 @@ namespace SpAnjaan\BlogPortal\Classes;
 
 use Cms\Classes\Controller;
 use Illuminate\Support\Collection;
-use Winter\Blog\Models\Post;
-use SpAnjaan\BlogPortal\Models\Visitor;
 use SpAnjaan\BlogPortal\Models\Sharecount;
+use SpAnjaan\BlogPortal\Models\Visitor;
+use Winter\Blog\Models\Post;
 
 class BlogPortalPost
 {
-    /**
-     * Post Model
-     *
-     * @var Post
-     */
+    /** @var Post */
     protected Post $model;
 
-    /**
-     * Post Tag Collection
-     *
-     * @var ?Collection
-     */
+    /** @var Collection|null */
     protected ?Collection $tagCollection = null;
 
-    /**
-     * Post Promoted Tag Collection
-     *
-     * @var ?Collection
-     */
+    /** @var Collection|null */
     protected ?Collection $promotedTagCollection = null;
 
-    /**
-     * Resolved page names cache
-     *
-     * @var array
-     */
+    /** @var array<string, string> */
     protected array $pageNames = [];
 
-    /**
-     * Default page name fallbacks
-     *
-     * @var array
-     */
+    /** @var array<string, string> */
     protected static array $pageDefaults = [
-        'postPage'    => 'blog/post',
-        'categoryPage'=> 'blog/category',
-        'tagPage'     => 'blog/tag',
-        'authorPage'  => 'blog/author',
-        'datePage'    => 'blog/date',
+        'postPage'     => 'blog/post',
+        'categoryPage' => 'blog/category',
+        'tagPage'      => 'blog/tag',
+        'authorPage'   => 'blog/author',
+        'datePage'     => 'blog/date',
     ];
 
     /**
-     * Create a new BlogPost
+     * Constructor
      *
      * @param Post $model
+     * @return void
      */
     public function __construct(Post $model)
     {
@@ -69,19 +50,21 @@ class BlogPortalPost
         }
 
         $model->setUrl($this->pageNames['postPage'], $ctrl);
-        $model->categories->each(fn($cat) => $cat->setUrl($this->pageNames['categoryPage'], $ctrl, ['page' => null]));
-        $model->spanjaan_blogportal_tags->each(fn($tag) => $tag->setUrl($this->pageNames['tagPage'], $ctrl, ['page' => null]));
+        $model->categories->each(
+            fn($cat) => $cat->setUrl($this->pageNames['categoryPage'], $ctrl, ['page' => null])
+        );
+        $model->spanjaan_blogportal_tags->each(
+            fn($tag) => $tag->setUrl($this->pageNames['tagPage'], $ctrl, ['page' => null])
+        );
     }
 
     /**
-     * Resolve all page names from components, viewBag, or defaults.
-     * Priority: component properties > viewBag > hardcoded defaults
+     * Resolve Page Names from Configuration
      *
      * @return void
      */
     protected function resolvePageNames(): void
     {
-        // Start with defaults
         $this->pageNames = static::$pageDefaults;
 
         $ctrl = $this->getController();
@@ -94,14 +77,13 @@ class BlogPortalPost
             return;
         }
 
-        // ViewBag — second priority (overrides defaults)
         $viewBag = $layout->getViewBag()->getProperties();
         $viewBagMap = [
-            'postPage'    => 'postPage',
-            'categoryPage'=> 'categoryPage',
-            'tagPage'     => 'blogportalTagPage',
-            'authorPage'  => 'blogportalAuthorPage',
-            'datePage'    => 'blogportalDatePage',
+            'postPage'     => 'postPage',
+            'categoryPage' => 'categoryPage',
+            'tagPage'      => 'blogportalTagPage',
+            'authorPage'   => 'blogportalAuthorPage',
+            'datePage'     => 'blogportalDatePage',
         ];
         foreach ($viewBagMap as $key => $vbKey) {
             if (!empty($viewBag[$vbKey])) {
@@ -109,13 +91,12 @@ class BlogPortalPost
             }
         }
 
-        // Component properties — highest priority (overrides viewBag)
         $componentMap = [
-            'postPage'    => ['blogPosts',                 'postPage'],
-            'categoryPage'=> ['blogPosts',                 'categoryPage'],
-            'tagPage'     => ['blogportalPostsByTag',      'postPage'],
-            'authorPage'  => ['blogportalPostsByAuthor',   'postPage'],
-            'datePage'    => ['blogportalPostsByDate',     'postPage'],
+            'postPage'     => ['blogPosts', 'postPage'],
+            'categoryPage' => ['blogPosts', 'categoryPage'],
+            'tagPage'      => ['blogportalPostsByTag', 'postPage'],
+            'authorPage'   => ['blogportalPostsByAuthor', 'postPage'],
+            'datePage'     => ['blogportalPostsByDate', 'postPage'],
         ];
         foreach ($componentMap as $key => [$componentName, $propName]) {
             if (($comp = $layout->getComponent($componentName)) !== null) {
@@ -128,7 +109,7 @@ class BlogPortalPost
     }
 
     /**
-     * Call Dynamic Property Method
+     * Magic Method Caller
      *
      * @param string $method
      * @param array $arguments
@@ -146,7 +127,7 @@ class BlogPortalPost
     }
 
     /**
-     * Get current CMS Controller
+     * Get Controller Instance
      *
      * @return Controller|null
      */
@@ -156,23 +137,23 @@ class BlogPortalPost
     }
 
     /**
-     * Get Estimated ReadTime
+     * Get Detail Read Time
      *
      * @param bool $string
      * @return array|string
      */
-    public function getDetailReadTime(bool $string = true)
+    public function getDetailReadTime(bool $string = true): array|string
     {
         $content = strip_tags($this->model->content_html);
         $count = str_word_count($content);
-        
+
         if ($count === 0) {
             if (!$string) {
                 return ['minutes' => 0, 'seconds' => 0];
             }
             return trans('spanjaan.blogportal::lang.model.post.read_time_sec', ['sec' => 0]);
         }
-        
+
         $minutes = intdiv($count, 200);
         $remaining = $count % 200;
         $seconds = intval(($remaining / 200) * 60);
@@ -187,7 +168,7 @@ class BlogPortalPost
     }
 
     /**
-     * Get Published Ago Date/Time
+     * Get Detail Published Ago
      *
      * @return string
      */
@@ -197,17 +178,17 @@ class BlogPortalPost
     }
 
     /**
-     * Get Post Comments
+     * Get Comments Collection
      *
      * @return mixed
      */
-    public function getComments()
+    public function getComments(): mixed
     {
         return $this->model->spanjaan_blogportal_comments;
     }
 
     /**
-     * Get Post Comments Count
+     * Get Comments Count
      *
      * @return int
      */
@@ -217,7 +198,7 @@ class BlogPortalPost
     }
 
     /**
-     * Get Post Tags
+     * Get Tags Collection
      *
      * @return Collection
      */
@@ -238,7 +219,7 @@ class BlogPortalPost
     }
 
     /**
-     * Get Promoted Post Tags
+     * Get Promoted Tags Collection
      *
      * @return Collection
      */
@@ -259,7 +240,7 @@ class BlogPortalPost
     }
 
     /**
-     * Get Post Share Count
+     * Get Total Shares Count
      *
      * @return int
      */
@@ -273,7 +254,7 @@ class BlogPortalPost
     }
 
     /**
-     * Get View Counter
+     * Get Views Count
      *
      * @return int
      */
@@ -285,7 +266,7 @@ class BlogPortalPost
     }
 
     /**
-     * Get Unique View Counter
+     * Get Unique Views Count
      *
      * @return int
      */
@@ -297,7 +278,7 @@ class BlogPortalPost
     }
 
     /**
-     * Check if current Visitor has seen the page already.
+     * Check if Current User has Seen Post
      *
      * @return bool
      */
@@ -312,13 +293,13 @@ class BlogPortalPost
      *
      * @return mixed
      */
-    public function getAuthor()
+    public function getAuthor(): mixed
     {
         return $this->model->user;
     }
 
     /**
-     * Get Author Archive URL
+     * Get Author URL
      *
      * @return string
      */
@@ -356,13 +337,13 @@ class BlogPortalPost
     }
 
     /**
-     * Get the next blog post.
+     * Get Next Posts
      *
      * @param int $limit
      * @param bool $sameCategories
      * @return mixed
      */
-    public function getNext(int $limit = 1, bool $sameCategories = false)
+    public function getNext(int $limit = 1, bool $sameCategories = false): mixed
     {
         $query = $this->model->applySibling(1)->with('categories');
 
@@ -383,13 +364,13 @@ class BlogPortalPost
     }
 
     /**
-     * Get the previous blog post.
+     * Get Previous Posts
      *
      * @param int $limit
      * @param bool $sameCategories
      * @return mixed
      */
-    public function getPrevious(int $limit = 1, bool $sameCategories = false)
+    public function getPrevious(int $limit = 1, bool $sameCategories = false): mixed
     {
         $query = $this->model->applySibling(-1)->with('categories');
 
@@ -410,7 +391,7 @@ class BlogPortalPost
     }
 
     /**
-     * Set the URL for a post or a collection of posts.
+     * Set Post URL
      *
      * @param mixed $posts
      * @return void
@@ -430,7 +411,7 @@ class BlogPortalPost
     }
 
     /**
-     * Get Similar Blog Posts
+     * Get Related Posts
      *
      * @param int $limit
      * @param array $exclude
@@ -438,9 +419,9 @@ class BlogPortalPost
      */
     public function getRelated(int $limit = 5, array $exclude = []): Collection
     {
-        $tags       = $this->model->spanjaan_blogportal_tags->pluck('id')->all();
+        $tags = $this->model->spanjaan_blogportal_tags->pluck('id')->all();
         $categories = $this->model->categories->pluck('id')->all();
-        $excludes   = array_merge([$this->model->id], $exclude);
+        $excludes = array_merge([$this->model->id], $exclude);
 
         return Post::isPublished()
             ->with(['categories', 'featured_images', 'spanjaan_blogportal_tags'])
@@ -457,7 +438,7 @@ class BlogPortalPost
     }
 
     /**
-     * Get Random Blog Posts
+     * Get Random Posts
      *
      * @param int $limit
      * @param array $exclude

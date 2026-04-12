@@ -5,40 +5,22 @@ declare(strict_types=1);
 namespace SpAnjaan\BlogPortal\Models;
 
 use Model;
+use Winter\Storm\Database\Traits\Validation;
 
-/**
- * Sharecount Model
- */
 class Sharecount extends Model
 {
-    use \Winter\Storm\Database\Traits\Validation;
+    use Validation;
 
-    /**
-     * Table associated with this Model
-     *
-     * @var string
-     */
+    /** @var string */
     protected $table = 'spanjaan_blogportal_sharecounts';
 
-    /**
-     * Disable timestamps — table has no created_at/updated_at columns
-     *
-     * @var bool
-     */
+    /** @var bool */
     public $timestamps = false;
 
-    /**
-     * Guarded Model attributes
-     *
-     * @var array
-     */
+    /** @var array<string> */
     protected $guarded = ['*'];
 
-    /**
-     * Fillable Model attributes
-     *
-     * @var array
-     */
+    /** @var array<string> */
     protected $fillable = [
         'post_id',
         'facebook',
@@ -47,11 +29,7 @@ class Sharecount extends Model
         'whatsapp',
     ];
 
-    /**
-     * Supported share platforms
-     *
-     * @var array
-     */
+    /** @var array<string> */
     protected const PLATFORMS = [
         'facebook',
         'twitter',
@@ -59,11 +37,7 @@ class Sharecount extends Model
         'whatsapp',
     ];
 
-    /**
-     * Model Validation Rules
-     *
-     * @var array
-     */
+    /** @var array<string, mixed> */
     public $rules = [
         'post_id'  => 'required|exists:winter_blog_posts,id',
         'facebook' => 'nullable|integer|min:0',
@@ -72,11 +46,7 @@ class Sharecount extends Model
         'whatsapp' => 'nullable|integer|min:0',
     ];
 
-    /**
-     * Attribute Casts
-     *
-     * @var array
-     */
+    /** @var array<string, string> */
     protected $casts = [
         'facebook' => 'integer',
         'twitter'  => 'integer',
@@ -84,11 +54,7 @@ class Sharecount extends Model
         'whatsapp' => 'integer',
     ];
 
-    /**
-     * BelongsTo Relationships
-     *
-     * @var array
-     */
+    /** @var array<string, array<string, mixed>> */
     public $belongsTo = [
         'post' => [
             'Winter\Blog\Models\Post',
@@ -97,14 +63,14 @@ class Sharecount extends Model
     ];
 
     /**
-     * Increment share count for a given platform
+     * Increment Share Count for Platform
      *
      * @param string $platform
      * @return bool
      */
     public function incrementShareCount(string $platform): bool
     {
-        if (in_array($platform, self::PLATFORMS)) {
+        if (in_array($platform, self::PLATFORMS, true)) {
             $this->$platform++;
             return $this->save();
         }
@@ -112,14 +78,14 @@ class Sharecount extends Model
     }
 
     /**
-     * Get share count for a given platform
+     * Get Share Count for Platform
      *
      * @param string $platform
      * @return int
      */
     public function getShareCount(string $platform): int
     {
-        if (!in_array($platform, self::PLATFORMS)) {
+        if (!in_array($platform, self::PLATFORMS, true)) {
             return 0;
         }
         return (int) ($this->$platform ?? 0);
