@@ -24,6 +24,8 @@ class AddIndexesToCommentsTable extends Migration
     public function down(): void
     {
         Schema::table('spanjaan_blogportal_comments', function (Blueprint $table) {
+            $table->dropForeign(['post_id']);
+            $table->dropForeign(['parent_id']);
             $table->dropIndex('idx_comments_post_id');
             $table->dropIndex('idx_comments_status');
             $table->dropIndex('idx_comments_parent_id');

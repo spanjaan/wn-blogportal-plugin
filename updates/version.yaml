@@ -50,3 +50,7 @@
     - 'Code quality: Added logging to empty catch blocks'
     - 'Performance: Created RecordViewJob for async view counting via queue'
     - 'Performance: View tracking no longer blocks page requests'
+2.0.4:
+    - 'Fix foreign key constraint errors when rolling back database migrations'
+    - 'Fix: Added dropForeign calls before dropIndex in v1.0.8 and v1.0.9 down() methods'
+    - v2.0.4/fix_foreign_key_constraints.php

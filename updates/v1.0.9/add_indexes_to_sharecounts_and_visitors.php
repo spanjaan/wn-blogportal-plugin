@@ -48,6 +48,7 @@ class AddIndexesToShareCountsAndVisitorsTable extends Migration
         });
 
         Schema::table('spanjaan_blogportal_tags_posts', function (Blueprint $table) {
+            $table->dropForeign(['post_id']);
             $table->dropIndex('idx_tags_posts_post_id');
         });
     }

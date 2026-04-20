@@ -43,7 +43,7 @@ class Plugin extends PluginBase
             'author'      => 'S.p. Anjaan',
             'icon'        => 'icon-tags',
             'homepage'    => 'https://github.com/spanjaan/blogportal',
-            'version'     => '2.0.3',
+            'version'     => '2.0.4',
         ];
     }
 
