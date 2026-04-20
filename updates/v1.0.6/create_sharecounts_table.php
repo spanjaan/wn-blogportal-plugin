@@ -19,12 +19,14 @@ class CreateShareCountsTable extends Migration
 
         Schema::create('spanjaan_blogportal_sharecounts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('post_id')->index();
+            $table->unsignedBigInteger('post_id');
             $table->integer('facebook')->default(0);
             $table->integer('twitter')->default(0);
             $table->integer('linkedin')->default(0);
             $table->integer('whatsapp')->default(0);
             $table->timestamps();
+            $table->index('post_id', 'idx_sharecounts_post_id');
+            $table->index('created_at', 'idx_sharecounts_created_at');
         });
     }
 

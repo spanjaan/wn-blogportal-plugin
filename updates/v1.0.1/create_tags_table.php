@@ -22,9 +22,10 @@ class CreateTagsTable extends Migration
             $table->string('slug', 64)->unique();
             $table->string('title', 128)->nullable();
             $table->text('description')->nullable();
-            $table->boolean('promote')->default(false);
+            $table->boolean('promote')->default(false)->index();
             $table->string('color', 32)->default('primary');
             $table->timestamps();
+            $table->index('slug', 'idx_tags_slug');
         });
 
         Schema::create('spanjaan_blogportal_tags_posts', function (Blueprint $table) {
@@ -33,6 +34,7 @@ class CreateTagsTable extends Migration
             $table->primary(['tag_id', 'post_id']);
             $table->foreign('tag_id')->references('id')->on('spanjaan_blogportal_tags')->onDelete('cascade');
             $table->foreign('post_id')->references('id')->on('winter_blog_posts')->onDelete('cascade');
+            $table->index('post_id', 'idx_tags_posts_post_id');
         });
     }
 

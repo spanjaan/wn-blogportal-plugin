@@ -20,7 +20,7 @@ class CreateCommentsTable extends Migration
         Schema::create('spanjaan_blogportal_comments', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('post_id')->unsigned();
-            $table->string('status', 32)->default('pending');
+            $table->string('status', 32)->default('pending')->index();
             $table->string('title', 128)->default('');
             $table->text('content');
             $table->text('content_html');
@@ -30,12 +30,14 @@ class CreateCommentsTable extends Migration
             $table->string('author')->nullable();
             $table->string('author_email')->nullable();
             $table->string('author_uid')->nullable();
-            $table->integer('parent_id')->unsigned()->nullable();
+            $table->integer('parent_id')->unsigned()->nullable()->index();
             $table->integer('author_id')->unsigned()->nullable();
             $table->string('author_table', 255)->nullable();
             $table->timestamp('approved_at')->nullable();
             $table->timestamp('rejected_at')->nullable();
             $table->timestamps();
+            $table->index(['post_id', 'status'], 'idx_comments_post_status');
+            $table->index('created_at', 'idx_comments_created_at');
 
             $table->foreign('post_id')->references('id')->on('winter_blog_posts')->onDelete('cascade');
             $table->foreign('parent_id')->references('id')->on('spanjaan_blogportal_comments')->onDelete('cascade');

@@ -25,7 +25,7 @@ class CreateVisitorsTable extends Migration
 
         Schema::create('spanjaan_blogportal_visitors', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('user', 64);
+            $table->string('user', 64)->index();
             $table->text('posts')->nullable();
             $table->text('likes')->nullable();
             $table->text('dislikes')->nullable();
